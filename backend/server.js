@@ -1,9 +1,10 @@
 const express = require("express");
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 require('dotenv').config();
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
@@ -16,7 +17,8 @@ connection.once('open', () => {
     console.log("MongoDB database connection established successfully");
 })
 
-app.use(express.static(`${__dirname}/client/build`));
+app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
+
 
 app.get("/test", (req, res) => {
     res.send({
@@ -25,7 +27,7 @@ app.get("/test", (req, res) => {
 });
 
 app.get("/*", function (req, res) {
-    res.sendFile(`${__dirname}/client/build/index.html`, function (err) {
+    res.sendFile(path.join(__dirname, '..', 'frontend/build', 'index.html'), function (err) {
         if (err) {
             res.status(500).send(err);
         }
