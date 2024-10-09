@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from './components/navbar';
 import Footer from './components/footer';
 import placeholder from './placeholder.png'
+import { SearchIcon, LocationMarkerIcon } from '@heroicons/react/solid';
 import './App.css'
 
 function App() {
@@ -20,10 +21,7 @@ function App() {
             <div className="flex items-center border border-gray-300 rounded-md">
               <input type="text" id="location" placeholder="Location" className="flex-grow p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" aria-describedby="location-icon" />
               <span className="p-1" id="location-icon">
-                <svg className="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <LocationMarkerIcon className="h-5 w-5 mr-2" aria-hidden="true" />
               </span>
             </div>
             <p className="text-gray-500 text-xs">Please enter a location</p>
@@ -37,7 +35,11 @@ function App() {
             <p className="text-gray-500 text-xs">Please enter a date</p>
           </div>
 
-          <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600">Search</button>
+          <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 flex items-center">
+            Search
+            <SearchIcon className="h-5 w-5 ml-2" aria-hidden="true" />
+          </button>
+
         </div>
       </div>
 
@@ -68,7 +70,10 @@ function App() {
                   </div>
                 </div>
                 <div class="flex justify-between items-center">
-                  <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 mt-2">Search</button>
+                  <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 flex items-center">
+                    Search
+                    <SearchIcon className="h-5 w-5 ml-2" aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -88,7 +93,10 @@ function App() {
                   </div>
                 </div>
                 <div class="flex justify-between items-center">
-                  <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 mt-2">Search</button>
+                  <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 flex items-center">
+                    Search
+                    <SearchIcon className="h-5 w-5 ml-2" aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -108,7 +116,10 @@ function App() {
                   </div>
                 </div>
                 <div class="flex justify-between items-center">
-                  <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 mt-2">Search</button>
+                  <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 flex items-center">
+                    Search
+                    <SearchIcon className="h-5 w-5 ml-2" aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -128,7 +139,10 @@ function App() {
                   </div>
                 </div>
                 <div class="flex justify-between items-center">
-                  <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 mt-2">Search</button>
+                  <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 flex items-center">
+                    Search
+                    <SearchIcon className="h-5 w-5 ml-2" aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             </div>
