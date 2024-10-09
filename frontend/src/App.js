@@ -1,7 +1,7 @@
 import React from 'react';
 import Navbar from './components/navbar';
 import Footer from './components/footer';
-import placeholder from './placeholder.png'
+import placeholder from './images/placeholder.png'
 import { SearchIcon, LocationMarkerIcon } from '@heroicons/react/solid';
 import './App.css'
 

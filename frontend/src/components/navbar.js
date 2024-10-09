@@ -1,4 +1,4 @@
-import traveltime from "../traveltime.png"
+import traveltime from "../images/traveltime.png"
 
 function Navbar() {
     return (

@@ -1,5 +1,5 @@
 .blurred-bg {
-    background-image: url('placeholder.png');
+    background-image: url('./images/placeholder.png');
     background-size: 100%;
     background-position: center;
     filter: blur(6px);
