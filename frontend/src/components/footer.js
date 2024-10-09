@@ -9,8 +9,8 @@ function Footer() {
 
     return (
         <div className="max-w-4xl mx-auto p-4">
-            <h2 className="text-3xl font-bold mb-6 text-center">Frequently Asked Questions</h2>
-            <p className="text-center mb-8">TravelTime makes your travel planning easy</p>
+            <h2 className="text-3xl font-bold mb-2 text-center">Frequently Asked Questions</h2>
+            <p className="text-center mb-8 text-gray-600">TravelTime makes your travel planning easy</p>
 
             <div className="space-y-4">
                 <div className="border border-gray-300 rounded-lg shadow-sm">

@@ -2,7 +2,7 @@ import traveltime from "../traveltime.png"
 
 function Navbar() {
     return (
-        <header class='flex border-b py-4 px-4 sm:px-10 bg-white font-sans min-h-[70px] tracking-wide relative z-50'>
+        <header class='flex border-b py-4 px-4 sm:px-10 bg-white min-h-[70px] tracking-wide relative z-50'>
             <div class='flex flex-wrap items-center gap-4 w-full'>
                 <a href="javascript:void(0)"><img src={traveltime} alt="logo" class='w-36' />
                 </a>
@@ -29,14 +29,18 @@ function Navbar() {
                                 </a>
                             </li>
                             <li class='max-lg:border-b max-lg:py-3'><a href='javascript:void(0)'
-                                    class='hover:text-[#007bff] text-gray-600 block font-bold text-[15px]'>Home</a>
+                                    class='hover:text-[#007bff] block'>Home</a>
                             </li>
                             <li class='max-lg:border-b max-lg:py-3'><a href='javascript:void(0)'
-                                class='hover:text-[#007bff] text-gray-600 block font-bold text-[15px]'>Contact</a>
+                                class='hover:text-[#007bff] block'>Contact</a>
                             </li>
                         </ul>
                     </div>
                 </div>
+            </div>
+            <div class='flex items-center ml-auto space-x-6'>
+                <a href='javascript:void(0)' class='hover:text-[#007bff]'>Signup</a>
+                <a href='javascript:void(0)' class='hover:text-[#007bff]'>Login</a>
             </div>
         </header>
     );
