@@ -1,54 +1,4 @@
-// import FullCalendar from '@fullcalendar/react'
-// import dayGridPlugin from '@fullcalendar/daygrid'
-// import interactionPlugin from '@fullcalendar/interaction'
-// import { useRef, useEffect, useState } from 'react'
-
-// export default function Calendar({ initialDaySelected = new Date() }, weatherData = mockWeatherData) {
-//   const [daySelected, setDaySelected] = useState(initialDaySelected);
-//   const calendarRef = useRef();
-
-//   function initializeDayCell(params) {
-//     console.log(params);
-//     params.el.onclick = () => {
-//       setDaySelected(params.date);
-//     };
-//   }
-//   useEffect(() => {
-
-//     if (calendarRef.current) {
-//       console.log(calendarRef.current.calendar);
-//       // calendarRef?.current;
-//     }
-//   });
-
-//   return (
-//     <FullCalendar
-//       ref={calendarRef}
-//       plugins={[dayGridPlugin]}
-//       initialView="dayGridMonth"
-//       dayCellClassNames={(arg) => {
-//         if (sameDay(arg.date, daySelected)) {
-//           return ['bg-blue-300'];
-//         } else {
-
-//           return ['hover:bg-blue-100 cursor-pointer focus:blue-100'];
-//         }
-//       }}
-//       dayCellDidMount={initializeDayCell}
-//       // dayCellContent={(arg) => {
-//       //   console.log(arg);
-//       //   if (sameDay(arg.date, daySelected)) {
-//       //     const weather = document.createElement('div');
-//       //     // weather.innerHTML = weatherData[`${}`]
-//       //     // return { domNodes: []}
-//       //   }
-//       // }}
-//     />
-//   )
-// }
-
-import React, { useState } from "react";
-import { formatDate } from "@fullcalendar/core";
+import React, { useEffect, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -72,20 +22,20 @@ function sameDay(d1, d2) {
   );
 }
 
-export default function DemoApp({ initialDaySelected = new Date() }) {
-  const [weekendsVisible, setWeekendsVisible] = useState(true);
-  const [currentEvents, setCurrentEvents] = useState([]);
+export default function Calendar({
+  initialDaySelected = new Date(),
+  events = [],
+  onCalendarInitialized,
+}) {
+  const calendarRef = useRef(null);
+  const [currentEvents, setCurrentEvents] = useState(events);
   const [daySelected, setDaySelected] = useState(initialDaySelected);
-
-  function handleWeekendsToggle() {
-    setWeekendsVisible(!weekendsVisible);
-  }
 
   function handleDateSelect(selectInfo) {
     let title = prompt("Please enter a new title for your event");
     let calendarApi = selectInfo.view.calendar;
 
-    calendarApi.unselect(); // clear date selection
+    calendarApi.unselect();
 
     if (title) {
       calendarApi.addEvent({
@@ -112,14 +62,17 @@ export default function DemoApp({ initialDaySelected = new Date() }) {
     setCurrentEvents(events);
   }
 
+  useEffect(() => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      onCalendarInitialized(calendarApi);
+    }
+  }, [onCalendarInitialized]);
+
   return (
-    // <Sidebar
-    //   weekendsVisible={weekendsVisible}
-    //   handleWeekendsToggle={handleWeekendsToggle}
-    //   currentEvents={currentEvents}
-    // />
     <div>
       <FullCalendar
+        ref={calendarRef}
         plugins={[dayGridPlugin, interactionPlugin]}
         headerToolbar={{
           left: "prev,next today",
@@ -127,15 +80,17 @@ export default function DemoApp({ initialDaySelected = new Date() }) {
           right: "dayGridMonth,dayGridYear",
         }}
         initialView="dayGridMonth"
-        editable={true}
+        monthStartFormat={{ month: "short", day: "numeric" }}
+        // editable={true}
+        // customButtons={{
+
+        // }}
         selectable={true}
-        selectMirror={true}
         dayMaxEvents={true}
-        weekends={weekendsVisible}
         initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
         // select={handleDateSelect}
-        eventContent={renderEventContent} // custom render function
-        eventClick={handleEventClick}
+        eventContent={renderEventContent}
+        // eventClick={handleEventClick}
         eventsSet={handleEvents} // called after events are initialized/added/changed/removed
         dayCellClassNames={(arg) => {
           // if (sameDay(arg.date, daySelected)) {
@@ -155,11 +110,11 @@ export default function DemoApp({ initialDaySelected = new Date() }) {
           };
           const Weather = weatherMap[getMockWeatherData()] ?? React.Fragment;
           return (
-            <div class="w-full grid grid-cols-12 px-1">
-              <div class="col-span-2">
+            <div class="w-full grid grid-cols-12 tablet:px-1">
+              <div class="col-span-1 tablet:col-span-2">
                 {Weather && <Weather size={24} color="#045d8d" />}
               </div>
-              <div class="col-span-10 fc-daygrid-day-top">
+              <div class="col-span-11 tablet:col-span-10 fc-daygrid-day-top">
                 {arg.dayNumberText}
               </div>
             </div>
