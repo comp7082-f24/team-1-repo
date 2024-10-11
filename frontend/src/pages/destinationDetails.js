@@ -201,7 +201,7 @@ function DestinationDetails() {
                 <div className="w-full p-2 ml-4 mt-4">
                     <p className="text-4xl font-bold mb-6">Total Estimated Cost: $555</p>
                 </div>
-                    <div className="w-2/3 p-4">
+                    <div className="w-1/3 p-4">
                         <div className="border border-gray-300 rounded-lg shadow-md p-4 flex items-center">
                             <ExternalLinkIcon className="w-5 h-5 mr-2" />
                             <p className="text-base">Open all activities for booking</p>
