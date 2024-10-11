@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { INITIAL_EVENTS, createEventId } from "./event-utils";
 import {
   WiDaySunny,
   WiDayRain,
@@ -14,13 +13,6 @@ function getMockWeatherData() {
   return ["sunny", "rainy", "cloudy", "windy"]?.[Math.floor(Math.random() * 4)];
 }
 
-function sameDay(d1, d2) {
-  return (
-    d1.getUTCFullYear() === d2.getUTCFullYear() &&
-    d1.getUTCMonth() === d2.getUTCMonth() &&
-    d1.getUTCDate() === d2.getUTCDate()
-  );
-}
 const weatherMap = {
   sunny: WiDaySunny,
   rainy: WiDayRain,
@@ -102,9 +94,6 @@ export default function Calendar({
           if (arg.date === daySelected) {
             return ["bg-blue-500 cursor-pointer"];
           }
-          // } else {
-          //   return ["hover:bg-blue-100 cursor-pointer focus:blue-100"];
-          // }
           return ["cursor-pointer"];
         }}
         dayCellContent={(arg) => {
