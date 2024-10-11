@@ -1,4 +1,5 @@
-const Account = require("./models/accountdb")
+const Account = require("./models/accountdb");
+const SavedQuery = require("./models/savedquerydb");
 const express = require("express");
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -65,11 +66,28 @@ app.post('/login', async (req, res) => {
         } else {
             res.status(401).json({ error: 'Invalid credentials' });
         }
-    } catch (error) {
-        console.error('Error during login:', error);
+    } catch (err) {
+        console.error('Error during login:', err);
         res.status(500).json({ error: 'Login error' });
     } finally {
         mongoose.connection.close();
+    }
+});
+
+//save query
+app.post('/savedquery', async (req, res) => {
+    const fields = req.body;
+
+    try {
+        await mongoose.connect(uri);
+        const newSavedQuery = new SavedQuery({ userId: fields.userId, searchQuery: fields.searchQuery})
+        await newSavedQuery.save();
+        res.status(200).json({ message: 'Query Saved!' });
+    } catch (err) {
+        console.error('Error during saving: ', err);
+        res.status(500).json({ error: 'Error during saving' })
+    } finally {
+        mongoose.connection.close()
     }
 });
 
