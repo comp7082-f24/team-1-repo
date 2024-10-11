@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Calendar from "../components/calendar/calendar";
-import { createEventId } from "../components/calendar/event-utils";
 import EventCard from "../components/eventCard/eventCard";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/shadcn/tabs";
+import Tabs from "../components/Tabs/tabs";
+
+let eventGuid = 0;
+
+function createEventId() {
+  return String(eventGuid++);
+}
 
 const mockReservedEvents = new Array(5).fill(null).map((_, i) => ({
   id: createEventId(),
@@ -43,7 +43,7 @@ function ActivitiesPlanner({
   },
 }) {
   const [calendarApi, setCalendarApi] = useState(null);
-  const [tabSelected, setTabSelected] = useState("activities-available");
+  const [tabSelected, setTabSelected] = useState(0);
 
   const handleCalendarInitialization = useCallback((api) => {
     api?.select(startDate);
@@ -55,77 +55,69 @@ function ActivitiesPlanner({
     calendarApi.addEvent(event);
   }
 
-  function handleValueChange(value) {
+  function handleTabChange(value) {
+    console.log(value);
     setTabSelected(value);
   }
-
-  function handleDateChanged(value) {}
 
   return (
     <div class="w-[95%] m-4 mx-auto p-4 border-2 rounded-md grid grid-cols-12 gap-4 h-[1000px]">
       <div class="flex flex-col h-[950px] box-border align-center col-span-4 border-2 p-2 rounded-md overflow-hidden">
         <Tabs
-          defaultValue="activities-available"
-          className="w-full"
-          onValueChange={handleValueChange}
-        >
-          <TabsList className="w-full flex p-2 bg-slate-100 rounded-md">
-            <TabsTrigger
-              className="w-1/2 py-2 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow"
-              value="activities-available"
-            >
-              Activities Available
-            </TabsTrigger>
-            <TabsTrigger
-              className="w-1/2 py-2 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow"
-              value="activities-selected"
-            >
-              Activities Added
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent className="mt-4" value="activities-available">
-            <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-              {mockEvents.map((event) => (
-                <li key={event.id}>
-                  <EventCard event={event} onAddEvent={handleAddEvent} />
-                </li>
-              ))}
-            </ul>
-          </TabsContent>
-          <TabsContent className="mt-4" value="activities-selected">
-            <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-              {console.log(calendarApi?.currentData?.currenDate)}
-              {console.log(
-                calendarApi
-                  ?.getEvents()
-                  ?.filter(
-                    (event) =>
-                      event?._instance.start ===
-                      calendarApi?.currentData?.currenDate
-                  )
-              )}
-              {calendarApi
-                ?.getEvents()
-                ?.filter(
-                  (event) =>
-                    event?._instance.start ===
-                    calendarApi?.currentData?.currenDate
-                )
-                ?.map((event) => (
-                  <li key={event.id}>
-                    <EventCard event={event} onAddEvent={handleAddEvent} />
-                  </li>
-                ))}
-            </ul>
-          </TabsContent>
-        </Tabs>
+          onTabChange={handleTabChange}
+          defaultActiveId={"activities-available"}
+          data={[
+            {
+              id: "activities-available",
+              name: "Activities Available",
+              content: (
+                <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                  {mockEvents.map((event) => (
+                    <li key={event.id}>
+                      <EventCard event={event} onAddEvent={handleAddEvent} />
+                    </li>
+                  ))}
+                </ul>
+              ),
+            },
+            {
+              id: "activities-added",
+              name: "Activities Added",
+              content: (
+                <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                  {console.log(calendarApi?.currentData?.currenDate)}
+                  {console.log(
+                    calendarApi
+                      ?.getEvents()
+                      ?.filter(
+                        (event) =>
+                          event?._instance.start ===
+                          calendarApi?.currentData?.currenDate
+                      )
+                  )}
+                  {calendarApi
+                    ?.getEvents()
+                    ?.filter(
+                      (event) =>
+                        event?._instance.start ===
+                        calendarApi?.currentData?.currenDate
+                    )
+                    ?.map((event) => (
+                      <li key={event.id}>
+                        <EventCard event={event} onAddEvent={handleAddEvent} />
+                      </li>
+                    ))}
+                </ul>
+              ),
+            },
+          ]}
+        />
       </div>
       <div class="col-span-8">
         <Calendar
           initialEvents={mockReservedEvents}
           initialDaySelected={startDate}
           onCalendarInitialized={handleCalendarInitialization}
-          onDateChanged={handleDateChanged}
         />
       </div>
     </div>

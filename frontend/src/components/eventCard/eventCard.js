@@ -1,5 +1,5 @@
-import { ExternalLinkIcon } from "@heroicons/react/solid";
-import { PlusCircleIcon } from "@heroicons/react/outline";
+import ExternalLinkIcon from "../icons/solid/ExternalLinkIcon.js";
+import PlusCircleIcon from "../icons/outline/PlusCircleIcon.js";
 
 export default function eventCard({ event, onAddEvent }) {
   return (
@@ -34,6 +34,7 @@ export default function eventCard({ event, onAddEvent }) {
           <button
             onClick={() => {
               onAddEvent(event);
+              console.log('added');
             }}
           >
             <PlusCircleIcon className="size-6" />
