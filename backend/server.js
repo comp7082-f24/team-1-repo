@@ -75,7 +75,7 @@ app.post('/login', async (req, res) => {
 });
 
 //save query
-app.post('/savedquery', async (req, res) => {
+app.post('/savequery', async (req, res) => {
     const fields = req.body;
 
     try {
