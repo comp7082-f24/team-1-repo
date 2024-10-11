@@ -21,45 +21,40 @@ function sameDay(d1, d2) {
     d1.getUTCDate() === d2.getUTCDate()
   );
 }
+const weatherMap = {
+  sunny: WiDaySunny,
+  rainy: WiDayRain,
+  cloudy: WiCloudy,
+  windy: WiDayWindy,
+};
 
 export default function Calendar({
   initialDaySelected = new Date(),
-  events = [],
+  initialEvents = [],
   onCalendarInitialized,
+  onDateChanged,
 }) {
   const calendarRef = useRef(null);
-  const [currentEvents, setCurrentEvents] = useState(events);
+  // const [currentEvents, setCurrentEvents] = useState(events);
   const [daySelected, setDaySelected] = useState(initialDaySelected);
 
+  const Weather = useRef(weatherMap[getMockWeatherData()] ?? React.Fragment);
   function handleDateSelect(selectInfo) {
-    let title = prompt("Please enter a new title for your event");
-    let calendarApi = selectInfo.view.calendar;
+    setDaySelected(selectInfo.startStr);
+    // let title = prompt("Please enter a new title for your event");
+    // let calendarApi = selectInfo.view.calendar;
 
-    calendarApi.unselect();
+    // calendarApi.unselect();
 
-    if (title) {
-      calendarApi.addEvent({
-        id: createEventId(),
-        title,
-        start: selectInfo.startStr,
-        end: selectInfo.endStr,
-        allDay: selectInfo.allDay,
-      });
-    }
-  }
-
-  function handleEventClick(clickInfo) {
-    if (
-      prompt(
-        `Are you sure you want to delete the event '${clickInfo.event.title}'`
-      )
-    ) {
-      clickInfo.event.remove();
-    }
-  }
-
-  function handleEvents(events) {
-    setCurrentEvents(events);
+    // if (title) {
+    //   calendarApi.addEvent({
+    //     id: createEventId(),
+    //     title,
+    //     start: selectInfo.startStr,
+    //     end: selectInfo.endStr,
+    //     allDay: selectInfo.allDay,
+    //   });
+    // }
   }
 
   useEffect(() => {
@@ -69,10 +64,15 @@ export default function Calendar({
     }
   }, [onCalendarInitialized]);
 
+  useEffect(() => {
+    console.log(daySelected);
+  }, [daySelected]);
+
   return (
     <div>
       <FullCalendar
         ref={calendarRef}
+        height="600px"
         plugins={[dayGridPlugin, interactionPlugin]}
         headerToolbar={{
           left: "prev,next today",
@@ -86,15 +86,22 @@ export default function Calendar({
 
         // }}
         selectable={true}
+        unselectAuto={false}
         dayMaxEvents={true}
-        initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
-        // select={handleDateSelect}
+        initialDate={daySelected}
+        eventDataTransform={(event) => {
+          return event;
+        }}
+        initialEvents={initialEvents} // alternatively, use the `events` setting to fetch from a feed
+        select={handleDateSelect}
         eventContent={renderEventContent}
         // eventClick={handleEventClick}
-        eventsSet={handleEvents} // called after events are initialized/added/changed/removed
+        moreLinkClick={true}
+        // eventsSet={handleEvents} // called after events are initialized/added/changed/removed
         dayCellClassNames={(arg) => {
-          // if (sameDay(arg.date, daySelected)) {
-          //   return ["bg-blue-500"];
+          if (arg.date === daySelected) {
+            return ["bg-blue-500 cursor-pointer"];
+          }
           // } else {
           //   return ["hover:bg-blue-100 cursor-pointer focus:blue-100"];
           // }
@@ -102,19 +109,16 @@ export default function Calendar({
         }}
         dayCellContent={(arg) => {
           // const curDate = arg.date.toDateString();
-          const weatherMap = {
-            sunny: WiDaySunny,
-            rainy: WiDayRain,
-            cloudy: WiCloudy,
-            windy: WiDayWindy,
-          };
-          const Weather = weatherMap[getMockWeatherData()] ?? React.Fragment;
+
           return (
-            <div class="w-full grid grid-cols-12 tablet:px-1">
-              <div class="col-span-1 tablet:col-span-2">
-                {Weather && <Weather size={24} color="#045d8d" />}
+            <div className="w-full grid grid-cols-12 tablet:px-1">
+              <div className="col-span-1 tablet:col-span-2">
+                {Weather.current && (
+                  // eslint-disable-next-line react/jsx-pascal-case
+                  <Weather.current size={24} color="#045d8d" />
+                )}
               </div>
-              <div class="col-span-11 tablet:col-span-10 fc-daygrid-day-top">
+              <div className="col-span-11 tablet:col-span-10 fc-daygrid-day-top">
                 {arg.dayNumberText}
               </div>
             </div>
@@ -132,9 +136,9 @@ export default function Calendar({
 
 function renderEventContent(eventInfo) {
   return (
-    <>
+    <span className="overflow-hidden text-ellipsis">
       <b>{eventInfo.timeText}</b>
       <i>{eventInfo.event.title}</i>
-    </>
+    </span>
   );
 }
