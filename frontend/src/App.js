@@ -5,6 +5,8 @@ import Footer from './components/footer';
 import LandingPage from './pages/landing.js';
 import ActivitiesPlanner from './pages/activitiesPlanner.js';
 import DestinationDetails from './pages/destinationDetails.js'
+import Login from './pages/login';
+import Signup from './pages/signup';
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path="/" element={<LandingPage/>} />
         <Route path="/details" element={<DestinationDetails />} />
         <Route path="/planner" element={<ActivitiesPlanner />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
       <Footer />
     </div>

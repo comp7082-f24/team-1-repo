@@ -4,7 +4,7 @@ function Navbar() {
     return (
         <header class='flex border-b py-4 px-4 sm:px-10 bg-white min-h-[70px] tracking-wide relative z-50'>
             <div class='flex flex-wrap items-center gap-4 w-full'>
-                <a href="javascript:void(0)"><img src={traveltime} alt="logo" class='w-36' />
+                <a href="/"><img src={traveltime} alt="logo" class='w-36' />
                 </a>
 
                 <div id="collapseMenu"
@@ -28,7 +28,7 @@ function Navbar() {
                                 <a href="javascript:void(0)"><img src="https://readymadeui.com/readymadeui.svg" alt="logo" class='w-36' />
                                 </a>
                             </li>
-                            <li class='max-lg:border-b max-lg:py-3'><a href='javascript:void(0)'
+                            <li class='max-lg:border-b max-lg:py-3'><a href='/'
                                     class='hover:text-[#007bff] block'>Home</a>
                             </li>
                             <li class='max-lg:border-b max-lg:py-3'><a href='javascript:void(0)'
@@ -39,8 +39,8 @@ function Navbar() {
                 </div>
             </div>
             <div class='flex items-center ml-auto space-x-6'>
-                <a href='javascript:void(0)' class='hover:text-[#007bff]'>Signup</a>
-                <a href='javascript:void(0)' class='hover:text-[#007bff]'>Login</a>
+                <a href='/signup' class='hover:text-[#007bff]'>Signup</a>
+                <a href='/login' class='hover:text-[#007bff]'>Login</a>
             </div>
         </header>
     );
