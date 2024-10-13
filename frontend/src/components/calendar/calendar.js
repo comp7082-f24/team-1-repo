@@ -9,8 +9,8 @@ import {
   WiDayWindy,
 } from "weather-icons-react";
 
-function getMockWeatherData() {
-  return ["sunny", "rainy", "cloudy", "windy"]?.[Math.floor(Math.random() * 4)];
+function getMockWeatherComponent(w) {
+  return weatherMap[w] ?? React.Fragment;
 }
 
 const weatherMap = {
@@ -24,29 +24,18 @@ export default function Calendar({
   initialDaySelected = new Date(),
   initialEvents = [],
   onCalendarInitialized,
-  onDateChanged,
+  // onDateChanged,
+  // onEventAdded,
+  // onEventRemoved,
+  onDateSelected,
+  weatherData,
 }) {
   const calendarRef = useRef(null);
   // const [currentEvents, setCurrentEvents] = useState(events);
   const [daySelected, setDaySelected] = useState(initialDaySelected);
-
-  const Weather = useRef(weatherMap[getMockWeatherData()] ?? React.Fragment);
   function handleDateSelect(selectInfo) {
     setDaySelected(selectInfo.startStr);
-    // let title = prompt("Please enter a new title for your event");
-    // let calendarApi = selectInfo.view.calendar;
-
-    // calendarApi.unselect();
-
-    // if (title) {
-    //   calendarApi.addEvent({
-    //     id: createEventId(),
-    //     title,
-    //     start: selectInfo.startStr,
-    //     end: selectInfo.endStr,
-    //     allDay: selectInfo.allDay,
-    //   });
-    // }
+    if (onDateSelected) onDateSelected(selectInfo);
   }
 
   useEffect(() => {
@@ -55,10 +44,6 @@ export default function Calendar({
       onCalendarInitialized(calendarApi);
     }
   }, [onCalendarInitialized]);
-
-  useEffect(() => {
-    console.log(daySelected);
-  }, [daySelected]);
 
   return (
     <div>
@@ -97,18 +82,21 @@ export default function Calendar({
           return ["cursor-pointer"];
         }}
         dayCellContent={(arg) => {
+          const dateStr = arg.date.toJSON().split("T")?.[0];
           return (
             <div className="flex items-center justify-between gap-4">
               <div>
-                {Weather.current && (
-                  // eslint-disable-next-line react/jsx-pascal-case
-                  <Weather.current size={24} color="#045d8d" />
-                )}
+                {(() => {
+                  const Weather = getMockWeatherComponent(weatherData[dateStr]);
+                  return <Weather size={24} color="#045d8d" />;
+                })()}
               </div>
               <div>{arg.dayNumberText}</div>
             </div>
           );
         }}
+        // eventAdd={onEventAdded}
+        // eventRemove={onEventRemoved}
         /* you can update a remote database when these fire:
       eventAdd={function(){}}
       eventChange={function(){}}

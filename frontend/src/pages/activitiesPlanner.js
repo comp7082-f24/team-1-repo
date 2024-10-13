@@ -9,32 +9,44 @@ function createEventId() {
   return String(eventGuid++);
 }
 
-const mockReservedEvents = new Array(5).fill(null).map((_, i) => ({
-  id: createEventId(),
-  title: "Test",
-  start: `2024-10-1${i}T00:00:00.000-07:00`,
-  seats: Math.floor(Math.random() * 4),
-  end: `2024-10-1${i + 1}T00:00:00.000-07:00`,
-  allDay: true,
-  duration: 2.5,
-  labels: ["Skip the line", "Small group"],
-  href: "https://www.tripadvisor.ca/Attraction_Review-g294074-d2536796-Reviews-Plaza_de_Mercado_Paloquemao-Bogota.html",
-  image:
-    "https://www.thewowstyle.com/wp-content/uploads/2015/01/nature-images..jpg",
-}));
-const mockEvents = new Array(10).fill(null).map((_, i) => ({
-  id: createEventId(),
-  title: "Test",
-  start: `2024-10-1${i}T00:00:00.000-07:00`,
-  seats: Math.floor(Math.random() * 4),
-  end: `2024-10-1${i + 1}T00:00:00.000-07:00`,
-  allDay: true,
-  duration: 2.5,
-  labels: ["Skip the line", "Small group"],
-  href: "https://www.tripadvisor.ca/Attraction_Review-g294074-d2536796-Reviews-Plaza_de_Mercado_Paloquemao-Bogota.html",
-  image:
-    "https://www.thewowstyle.com/wp-content/uploads/2015/01/nature-images..jpg",
-}));
+const mockWeatherData = new Array(30)
+  .fill(null)
+  .map(
+    () => ["sunny", "rainy", "cloudy", "windy"]?.[Math.floor(Math.random() * 4)]
+  )
+  .reduce(
+    (acc, item, i) => ({
+      ...acc,
+      [`2024-10-${`${1 + i}`.padStart(2, "0")}`]: item,
+    }),
+    {}
+  );
+
+const mockEvents = new Array(30)
+  .fill(null)
+  .map((_, i) => ({
+    id: createEventId(),
+    title: "Test",
+    start: `2024-10-${i % 3 ? i : 1 + i}T00:00:00.000-07:00`,
+    seats: Math.floor(Math.random() * 4),
+    end: `2024-10-${i % 3 ? i : i + 2}T00:00:00.000-07:00`,
+    allDay: true,
+    duration: 2.5,
+    labels: ["Skip the line", "Small group"],
+    href: "https://www.tripadvisor.ca/Attraction_Review-g294074-d2536796-Reviews-Plaza_de_Mercado_Paloquemao-Bogota.html",
+    image:
+      "https://www.thewowstyle.com/wp-content/uploads/2015/01/nature-images..jpg",
+  }))
+  .reduce(
+    (acc, item, i) => ({
+      ...acc,
+      [item.start.split("T")[0]]: [
+        ...(acc?.[item.start.split("T")[0]] ?? []),
+        item,
+      ],
+    }),
+    {}
+  );
 
 function ActivitiesPlanner({
   startDate = "2024-10-09T00:00:00-07:00",
@@ -43,20 +55,53 @@ function ActivitiesPlanner({
   },
 }) {
   const [calendarApi, setCalendarApi] = useState(null);
-  const [tabSelected, setTabSelected] = useState(0);
+  const [tripPlan, setTripPlan] = useState({});
+  const [availableEvents, setAvailableEvents] = useState(mockEvents);
+  const [dateSelected, setDateSelected] = useState(startDate);
+  const [_, setTabSelected] = useState(0);
 
   const handleCalendarInitialization = useCallback((api) => {
     api?.select(startDate);
     setCalendarApi(api);
-    console.log(api?.currentData);
   }, []);
+
+  function handleDateSelected(selectInfo) {
+    setDateSelected(selectInfo.startStr);
+  }
 
   function handleAddEvent(event) {
     calendarApi.addEvent(event);
+    const eventStart = event?.start?.split("T")[0];
+
+    setAvailableEvents((ae) => ({
+      ...ae,
+      [eventStart]: ae?.[eventStart]?.filter((ev) => ev.id !== event.id),
+    }));
+    setTripPlan((plan) => ({
+      ...plan,
+      [eventStart]: [...(plan?.[eventStart] ?? []), event],
+    }));
+  }
+
+  function handleRemoveEvent(event) {
+    const eventStart = event?.start?.split("T")[0];
+    const ce = calendarApi.getEventById(event.id);
+
+    setAvailableEvents((ae) => ({
+      ...ae,
+      [eventStart]: [
+        ...(ae?.[eventStart]?.filter((ev) => ev.id !== event.id) ?? []),
+        event,
+      ],
+    }));
+    setTripPlan((tp) => ({
+      ...tp,
+      [eventStart]: tp?.[eventStart]?.filter((ev) => ev.id !== event.id) ?? [],
+    }));
+    ce?.remove();
   }
 
   function handleTabChange(value) {
-    console.log(value);
     setTabSelected(value);
   }
 
@@ -72,7 +117,7 @@ function ActivitiesPlanner({
               name: "Activities Available",
               content: (
                 <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-                  {mockEvents.map((event) => (
+                  {availableEvents?.[dateSelected]?.map((event) => (
                     <li key={event.id}>
                       <EventCard event={event} onAddEvent={handleAddEvent} />
                     </li>
@@ -85,28 +130,15 @@ function ActivitiesPlanner({
               name: "Activities Added",
               content: (
                 <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-                  {console.log(calendarApi?.currentData?.currenDate)}
-                  {console.log(
-                    calendarApi
-                      ?.getEvents()
-                      ?.filter(
-                        (event) =>
-                          event?._instance.start ===
-                          calendarApi?.currentData?.currenDate
-                      )
-                  )}
-                  {calendarApi
-                    ?.getEvents()
-                    ?.filter(
-                      (event) =>
-                        event?._instance.start ===
-                        calendarApi?.currentData?.currenDate
-                    )
-                    ?.map((event) => (
-                      <li key={event.id}>
-                        <EventCard event={event} onAddEvent={handleAddEvent} />
-                      </li>
-                    ))}
+                  {tripPlan?.[dateSelected]?.map((event) => (
+                    <li key={event.id}>
+                      <EventCard
+                        event={event}
+                        onRemoveEvent={handleRemoveEvent}
+                        isAdded={true}
+                      />
+                    </li>
+                  ))}
                 </ul>
               ),
             },
@@ -115,9 +147,13 @@ function ActivitiesPlanner({
       </div>
       <div class="col-span-8">
         <Calendar
-          initialEvents={mockReservedEvents}
-          initialDaySelected={startDate}
+          // initialEvents={mockReservedEvents}
+          initialDaySelected={dateSelected}
           onCalendarInitialized={handleCalendarInitialization}
+          // onEventAdded={handleEventAdded}
+          // onEventRemoved={handleEventRemoved}
+          onDateSelected={handleDateSelected}
+          weatherData={mockWeatherData}
         />
       </div>
     </div>

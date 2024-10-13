@@ -5,7 +5,7 @@ function Tabs({ data, onTabChange, defaultActiveId }) {
 
   function changeTabOnClick(id) {
     setActiveTab(id);
-    onTabChange(id);
+    if (onTabChange) onTabChange(id);
   }
 
   return (
