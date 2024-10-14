@@ -1,8 +1,11 @@
-function Login() {
+import traveltime from '../images/traveltime.png'
+
+function SignIn() {
     return (
         <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
             <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-                <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Log in to your account</h2>
+                <a href="/"><img class="mx-auto h-10 w-auto" src={traveltime} alt="TravelTime" /></a>
+                <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Sign in to your account</h2>
             </div>
 
             <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
@@ -44,4 +47,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default SignIn;

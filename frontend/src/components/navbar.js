@@ -38,9 +38,9 @@ function Navbar() {
                     </div>
                 </div>
             </div>
-            <div class='flex items-center ml-auto space-x-6'>
-                <a href='/signup' class='hover:text-[#007bff]'>Signup</a>
-                <a href='/login' class='hover:text-[#007bff]'>Login</a>
+            <div class='flex items-center ml-auto space-x-6 whitespace-nowrap'>
+                <a href='/signup' class='hover:text-[#007bff]'>Sign up</a>
+                <a href='/signin' class='hover:text-[#007bff]'>Sign in</a>
             </div>
         </header>
     );

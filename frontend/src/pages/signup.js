@@ -1,7 +1,10 @@
+import traveltime from "../images/traveltime.png"
+
 function Signup() {
     return(
         <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
             <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+                <a href="/"><img class="mx-auto h-10 w-auto" src={traveltime} alt="TravelTime" /></a>
                 <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Create your account</h2>
             </div>
 
@@ -40,7 +43,7 @@ function Signup() {
 
                 <p class="mt-10 text-center text-sm text-gray-500">
                     Already have an account?
-                    <a href="/login" class="font-semibold leading-6 text-blue-600 hover:text-blue-500"> Log in!</a>
+                    <a href="/signin" class="font-semibold leading-6 text-blue-600 hover:text-blue-500"> Sign in!</a>
                 </p>
             </div>
         </div>
