@@ -42,7 +42,7 @@ app.post("/signup", async (req, res) => {
 
     try {
         await mongoose.connect(uri, { useNewUrlParser: true });
-        const newUser = new Account({ username: fields.username, password: fields.password, location: fields.location});
+        const newUser = new Account({ email: fields.email, username: fields.username, password: fields.password});
         await newUser.save();
         res.status(200).json({ message: 'User registered successfully!' });
     } catch (err) {
@@ -53,22 +53,22 @@ app.post("/signup", async (req, res) => {
     }
 });
 
-// login route
-app.post('/login', async (req, res) => {
+// signin route
+app.post('/signin', async (req, res) => {
     const fields = req.body;
 
     try {
         await mongoose.connect(uri);
-        const user = await Account.findOne({ username: fields.username, password: fields.password });
+        const user = await Account.findOne({ email: fields.email, password: fields.password });
 
         if (user) {
-            res.status(200).json({ message: 'Login successful', user });
+            res.status(200).json({ message: 'Sign in successful', user });
         } else {
             res.status(401).json({ error: 'Invalid credentials' });
         }
     } catch (err) {
         console.error('Error during login:', err);
-        res.status(500).json({ error: 'Login error' });
+        res.status(500).json({ error: 'Sign in error' });
     } finally {
         mongoose.connection.close();
     }
