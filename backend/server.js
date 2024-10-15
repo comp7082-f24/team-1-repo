@@ -8,6 +8,7 @@ const app = express();
 const port = process.env.PORT || 5001;
 require('dotenv').config();
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 const uri = process.env.ATLAS_URI;
@@ -42,7 +43,13 @@ app.post("/signup", async (req, res) => {
 
     try {
         await mongoose.connect(uri, { useNewUrlParser: true });
-        const newUser = new Account({ email: fields.email, username: fields.username, password: fields.password});
+
+        const existingUser = await Account.findOne({ email: fields.email });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Email is already registered' });
+        }
+
+        const newUser = new Account({ email: fields.email, username: fields.username, password: fields.password });
         await newUser.save();
         res.status(200).json({ message: 'User registered successfully!' });
     } catch (err) {
@@ -52,6 +59,7 @@ app.post("/signup", async (req, res) => {
         mongoose.connection.close();
     }
 });
+
 
 // signin route
 app.post('/signin', async (req, res) => {
