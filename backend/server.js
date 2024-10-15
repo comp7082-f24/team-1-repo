@@ -101,6 +101,7 @@ app.post('/signin', async (req, res) => {
     }
 });
 
+// check if user is auth route
 app.post('/isauth', (req, res) => {
     const token = req.cookies.token;
 
@@ -117,6 +118,7 @@ app.post('/isauth', (req, res) => {
     });
 });
 
+// signout route
 app.post('/signout', (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
@@ -124,7 +126,6 @@ app.post('/signout', (req, res) => {
         sameSite: 'strict',
     });
 
-    // Optionally, send a response
     res.status(200).json({ message: 'Logged out successfully' });
 });
 
