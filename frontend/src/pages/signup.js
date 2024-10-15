@@ -10,8 +10,8 @@ function Signup() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null); // Clear previous error messages
-        setSuccess(null); // Clear success message
+        setError(null);
+        setSuccess(null);
 
         try {
             const response = await fetch('/signup', {
@@ -21,7 +21,8 @@ function Signup() {
             });
 
             if (response.ok) {
-                setSuccess('User registered successfully! You can now sign in.');
+                setSuccess('User registered successfully!');
+                window.location.href = '/'; 
             } else {
                 const data = await response.json();
                 setError(data.error || 'Error during registration');

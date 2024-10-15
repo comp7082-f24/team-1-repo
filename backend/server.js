@@ -4,13 +4,19 @@ const express = require("express");
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+const saltRounds = 10;
 const app = express();
 const port = process.env.PORT || 5001;
 require('dotenv').config();
+app.use(cookieParser());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+const secretKey = process.env.JWT_SECRET_KEY;
 const uri = process.env.ATLAS_URI;
 mongoose.connect(uri, {
     useNewUrlParser: true,
@@ -49,9 +55,14 @@ app.post("/signup", async (req, res) => {
             return res.status(400).json({ error: 'Email is already registered' });
         }
 
-        const newUser = new Account({ email: fields.email, username: fields.username, password: fields.password });
+        const hashedPassword = await bcrypt.hash(fields.password, saltRounds);
+        const newUser = new Account({ email: fields.email, username: fields.username, password: hashedPassword });
         await newUser.save();
-        res.status(200).json({ message: 'User registered successfully!' });
+
+        const token = jwt.sign({ id: newUser._id, email: newUser.email, username: newUser.username }, secretKey, { expiresIn: '1h' });
+
+        res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' })
+            .status(200).json({ message: 'User registered successfully!' });
     } catch (err) {
         console.error('Error registering user: ', err);
         res.status(500).json({ error: 'Error registering user' });
@@ -60,17 +71,25 @@ app.post("/signup", async (req, res) => {
     }
 });
 
-
 // signin route
 app.post('/signin', async (req, res) => {
     const fields = req.body;
 
     try {
         await mongoose.connect(uri);
-        const user = await Account.findOne({ email: fields.email, password: fields.password });
+        const user = await Account.findOne({ email: fields.email });
 
         if (user) {
-            res.status(200).json({ message: 'Sign in successful', user });
+            const isMatch = await bcrypt.compare(fields.password, user.password);
+
+            if (isMatch) {
+                const token = jwt.sign({ id: user._id, email: user.email, username: user.username }, secretKey, { expiresIn: '1h' });
+
+                res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' })
+                    .status(200).json({ message: 'Sign in successful', user });
+            } else {
+                res.status(401).json({ error: 'Invalid credentials' });
+            }
         } else {
             res.status(401).json({ error: 'Invalid credentials' });
         }
@@ -81,6 +100,34 @@ app.post('/signin', async (req, res) => {
         mongoose.connection.close();
     }
 });
+
+app.post('/isauth', (req, res) => {
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).send({ authenticated: false });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
+        if (err) {
+            return res.status(403).send({ authenticated: false });
+        }
+
+        res.send({ authenticated: true, user });
+    });
+});
+
+app.post('/signout', (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+    });
+
+    // Optionally, send a response
+    res.status(200).json({ message: 'Logged out successfully' });
+});
+
 
 //save query
 app.post('/savequery', async (req, res) => {
