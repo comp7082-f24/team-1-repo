@@ -13,7 +13,6 @@ function Navbar() {
                     credentials: 'include'
                 });
                 const data = await response.json();
-                console.log("data: ", data);
                 setIsAuthenticated(data.authenticated);
                 if (data.authenticated) {
                     setUser(data.user);
