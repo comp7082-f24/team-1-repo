@@ -1,14 +1,27 @@
 import React, { useState } from 'react';
-import placeholder from '../images/placeholder.png';
 import { SearchIcon, LocationMarkerIcon } from '@heroicons/react/solid';
 import '../App.css';
 import DataCard from '../components/DataCard';
+import ActivityCard from '../components/activityCard/activityCard';
+import PopupModal from '../components/activityCard/popupModal'
 
 function LandingPage() {
   const [location, setLocation] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [dailyWeatherData, setDailyWeatherData] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCardData, setSelectedCardData] = useState(null);
+
+  const handleCardClick = (data) => {
+    setSelectedCardData(data);
+    setShowModal(true);
+    console.log('open: ', data)
+  };
+
+  const handleClosePopup = () => {
+    setShowModal(false);
+  };
 
   const handleLocationChange = (e) => {
     setLocation(e.target.value);
@@ -32,15 +45,15 @@ function LandingPage() {
     const startYear = new Date(startDate + "T00:00:00").getFullYear();
     const endYear = new Date(endDate + "T00:00:00").getFullYear();
     const years_of_data = 5; // We'll gather data for the last 5 years
-  
+
     let URL = `https://geocoding-api.open-meteo.com/v1/search?name=${location}&count=1&language=en&format=json`;
-    
+
     fetch(URL)
       .then((response) => response.json())
       .then((data) => {
         let longitude = data.results[0].longitude;
         let latitude = data.results[0].latitude;
-  
+
         const fetchWeatherData = async () => {
           const startDay = startDate.split('-')[2];
           const endDay = endDate.split('-')[2];
@@ -49,13 +62,13 @@ function LandingPage() {
 
           const queryEndYear = new Date().getFullYear() - 1; // queryEndYear is one year less than the current year. This is to prevent querying the api for dates that don't have weather data yet, because they are in the future.
           const queryStartYear = (startYear - (endYear - queryEndYear)); // queryStartYear is found by getting the diffrence between endYear and queryEndYear, and applying the same diffrence to startYear.
-  
+
           let promises = []; // Array to store the promises from the multiple weather api calls in the next block.
 
           for (let i = 0; i < years_of_data; i++) {
             const start = `${startMonth}-${startDay}`;
             const end = `${endMonth}-${endDay}`;
-            
+
             const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=${latitude}&longitude=${longitude}&start_date=${queryStartYear - i}-${start}&end_date=${queryEndYear - i}-${end}&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum`;
 
             promises[i] = fetch(URL).then(Response => Response.json()); // This will have the resolved promise be a json object instead of a response object.
@@ -65,30 +78,30 @@ function LandingPage() {
            or it will run the .catch code if any of the promises reject or if there is an error in the .then block. Using Promise.all means we can send our api
            requests at the same time instead of sequentionally, and also don't need to worry about the order they resolve in.*/
           Promise.all(promises)
-          .then(responses => {
-            const date = new Date(startDate + "T00:00:00"); // The +T00:00:00 is to deal with a possible of by one bug, related to javascript Date objects, and timezones.
-            const averagedData = [];
+            .then(responses => {
+              const date = new Date(startDate + "T00:00:00"); // The +T00:00:00 is to deal with a possible of by one bug, related to javascript Date objects, and timezones.
+              const averagedData = [];
 
-            // For each day of data, initialize the array entry for the given day.
-            for (let day = 0; day < responses[0].daily.time.length; day++) {
-              averagedData[day] = {
-                date: date.toDateString(),
-                averageTemperature: 0,
-                averagePrecipitation: 0,
-              }
+              // For each day of data, initialize the array entry for the given day.
+              for (let day = 0; day < responses[0].daily.time.length; day++) {
+                averagedData[day] = {
+                  date: date.toDateString(),
+                  averageTemperature: 0,
+                  averagePrecipitation: 0,
+                }
 
-              // For each year of data, add the data to the days average, while dividing it by the number of years of data, so the average will be accurate.
-              for (let year = 0; year < years_of_data; year++) {
-                averagedData[day].averageTemperature += (responses[year].daily.temperature_2m_mean[day]) / years_of_data;
-                averagedData[day].averagePrecipitation += (responses[year].daily.precipitation_sum[day]) / years_of_data;
+                // For each year of data, add the data to the days average, while dividing it by the number of years of data, so the average will be accurate.
+                for (let year = 0; year < years_of_data; year++) {
+                  averagedData[day].averageTemperature += (responses[year].daily.temperature_2m_mean[day]) / years_of_data;
+                  averagedData[day].averagePrecipitation += (responses[year].daily.precipitation_sum[day]) / years_of_data;
+                }
+                date.setDate(date.getDate() + 1); // Increment the date by 1.
               }
-              date.setDate(date.getDate() + 1); // Increment the date by 1.
-            }
-            setDailyWeatherData(averagedData); // Send the data, so it will appear on the frontend.
-          })
-          .catch(error => {
-            console.error(error);
-          })         
+              setDailyWeatherData(averagedData); // Send the data, so it will appear on the frontend.
+            })
+            .catch(error => {
+              console.error(error);
+            })
         };
         fetchWeatherData();
       })
@@ -96,13 +109,22 @@ function LandingPage() {
         console.error('Error fetching location data:', error);
       });
   };
-  
+
 
   return (
     <div>
+      <div className="flex justify-center items-center">
+        {/* PopupModal Component */}
+        {showModal && (
+          <PopupModal
+            data={selectedCardData}
+            onClose={handleClosePopup}
+          />
+        )}
+      </div>
       {/* Top section */}
-      <div className="mx-auto p-4 relative z-10">
-        <div className="max-w-6xl mx-auto p-4 mt-10 mb-20 relative z-10">
+      <div className="mx-auto p-4 relative">
+        <div className="max-w-6xl mx-auto p-4 mt-10 mb-20 relative">
           <p className="mb-10 mt-10 text-6xl">Plan Your Next Trip</p>
           <p className="mt-10 mb-10 text-3xl">
             Check for weather predictions and activities to better plan your trip
@@ -178,18 +200,18 @@ function LandingPage() {
       </div>
 
       {/* Display DataCard when dailyWeatherData is available */}
-        {dailyWeatherData.length > 0 && (
+      {dailyWeatherData.length > 0 && (
         <div className="max-w-6xl mx-auto p-4 mb-10">
-            {dailyWeatherData.map((data, index) => (
+          {dailyWeatherData.map((data, index) => (
             <DataCard
-                key={index}
-                date={data.date}
-                temperature={data.averageTemperature}
-                precipitation={data.averagePrecipitation}
+              key={index}
+              date={data.date}
+              temperature={data.averageTemperature}
+              precipitation={data.averagePrecipitation}
             />
-            ))}
+          ))}
         </div>
-        )}
+      )}
 
 
       {/* Bottom section */}
@@ -198,34 +220,14 @@ function LandingPage() {
           <h2 className="mb-4 mt-20 text-6xl">Most Popular Queries</h2>
           <p className="mb-10 text-gray-500">Quality as judged by customers</p>
 
+          {/* Cards */}
           <div className="grid grid-cols-2 gap-4">
             {[...Array(4)].map((_, index) => (
-              <div key={index} className="flex flex-col bg-white rounded-lg shadow-md">
-                <div className="relative h-48">
-                  <img
-                    src={placeholder}
-                    alt="Activity Image"
-                    className="object-cover w-full h-full rounded-tl-lg rounded-tr-lg"
-                  />
-                </div>
-                <div className="p-4 flex flex-col justify-between">
-                  <div>
-                    <h2 className="text-lg font-bold">Destination</h2>
-                    <p className="text-gray-500">Information</p>
-                    <p className="text-gray-500">...</p>
-                    <div className="flex items-center">
-                      <span className="text-yellow-500 mr-1">★★★★★</span>
-                      <span className="text-gray-500">5.0</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <button className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 flex items-center">
-                      Search
-                      <SearchIcon className="h-5 w-5 ml-2" aria-hidden="true" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ActivityCard
+                key={index}
+                index={index}
+                onClick={() => handleCardClick({ title: 'Destination', description: 'More information', rating: '★★★★★', price: 'Free' })}
+              />
             ))}
           </div>
         </div>
