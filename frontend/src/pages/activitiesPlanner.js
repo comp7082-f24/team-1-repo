@@ -53,6 +53,7 @@ function ActivitiesPlanner({
   events = {
     "2024-10-09T00:00:00-07:00": [],
   },
+  location = "Vancouver"
 }) {
   const [calendarApi, setCalendarApi] = useState(null);
   const [tripPlan, setTripPlan] = useState({});
@@ -106,9 +107,9 @@ function ActivitiesPlanner({
     setTabSelected(value);
   }
 
-  useEffect((location) => {
+  useEffect(() => {
     // Temporary location (this doesn't have to be a location. can be literally anything on wikipedia)
-    const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent("Vancouver")}`;
+    const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(location)}`;
 
     const fetchLocationData = async () => {
       try {
