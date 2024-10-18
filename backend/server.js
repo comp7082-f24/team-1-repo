@@ -35,6 +35,36 @@ app.get("/test", (req, res) => {
     });
 });
 
+// popular queries
+app.get('/popularqueries', async (req, res) => {
+    try {
+        await mongoose.connect(uri);
+
+        const popularQueries = await SavedQuery.aggregate([
+            {
+                $group: {
+                    _id: { $toLower: "$searchQuery" },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { count: -1 }
+            },
+            {
+                $limit: 4 // can change limit
+            }
+        ]);
+
+        res.status(200).json(popularQueries);
+    } catch (err) {
+        console.error('Error fetching popular queries:', err);
+        res.status(500).json({ error: 'Error fetching popular queries' });
+    } finally {
+        mongoose.connection.close();
+    }
+});
+
+
 app.get("/*", function (req, res) {
     res.sendFile(path.join(__dirname, '..', 'frontend/build', 'index.html'), function (err) {
         if (err) {
