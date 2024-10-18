@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import Calendar from "../components/calendar/calendar";
 import EventCard from "../components/eventCard/eventCard";
 import Tabs from "../components/Tabs/tabs";
@@ -59,6 +59,7 @@ function ActivitiesPlanner({
   const [availableEvents, setAvailableEvents] = useState(mockEvents);
   const [dateSelected, setDateSelected] = useState(startDate);
   const [_, setTabSelected] = useState(0);
+  const [locationInfo, setLocationInfo] = useState({});
 
   const handleCalendarInitialization = useCallback((api) => {
     api?.select(startDate);
@@ -105,7 +106,42 @@ function ActivitiesPlanner({
     setTabSelected(value);
   }
 
+  useEffect((location) => {
+    // Temporary location (this doesn't have to be a location. can be literally anything on wikipedia)
+    const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent("Vancouver")}`;
+
+    const fetchLocationData = async () => {
+      try {
+        const response = await fetch(URL);
+        if (!response.ok) {
+          throw new Error('Location not found.');
+        }
+        const data = await response.json();
+        setLocationInfo(data); 
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchLocationData();
+  }, []);
+
   return (
+    <div>
+      <div className="w-[95%] m-4 mx-auto p-4 grid grid-cols-12 gap-4">
+        <div className="flex flex-row items-start col-span-12 space-x-4">
+          {locationInfo.thumbnail && (
+            <img
+              src={locationInfo.thumbnail.source}
+              alt={locationInfo.title}
+              className="w-1/4 rounded-md"
+            />
+          )}
+          {locationInfo.extract && (
+            <p className="w-3/4">{locationInfo.extract}</p>
+          )}
+        </div>
+      </div>
     <div class="w-[95%] m-4 mx-auto p-4 border-2 rounded-md grid grid-cols-12 gap-4 h-[1000px]">
       <div class="flex flex-col h-[950px] box-border align-center col-span-4 border-2 p-2 rounded-md overflow-hidden">
         <Tabs
@@ -156,6 +192,7 @@ function ActivitiesPlanner({
           weatherData={mockWeatherData}
         />
       </div>
+    </div>
     </div>
   );
 }
