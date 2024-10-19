@@ -115,7 +115,7 @@ function LandingPage() {
   useEffect(() => {
     const fetchPopularQueryAndWikiData = async () => {
       try {
-        // Step 1: Fetch popular queries from the database
+        // Fetch popular queries from the database
         const queryResponse = await fetch('/popularqueries');
         if (!queryResponse.ok) {
           throw new Error("Couldn't fetch queries");
@@ -123,7 +123,7 @@ function LandingPage() {
         const popularQueryData = await queryResponse.json();
         setPopularQueries(popularQueryData);
 
-        // Step 2: Fetch data from Wikipedia based on popular queries
+        // Fetch data from Wikipedia based on popular queries
         const wikiDataArray = await Promise.all(
           popularQueryData.map(async (query) => {
             const wikiResponse = await fetch(
@@ -141,7 +141,7 @@ function LandingPage() {
       } catch (error) {
         console.error(error);
 
-        // In case of an error fetching queries, use dummy data
+        // dummy data
         const dummyData = [
           {
             "_id": "vancouver",
