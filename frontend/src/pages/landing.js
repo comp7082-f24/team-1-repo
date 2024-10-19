@@ -16,22 +16,6 @@ function LandingPage() {
   const [cardInfoArray, setCardInfoArray] = useState([]);
   const [popularQueries, setPopularQueries] = useState([]);
 
-  // dummy data
-  // const popularQueries = [
-  //   {
-  //     "_id": "vancouver",
-  //     "count": 4
-  //   },
-  //   {
-  //     "_id": "detroit",
-  //     "count": 2
-  //   },
-  //   {
-  //     "_id": "wyoming",
-  //     "count": 1
-  //   }
-  // ];
-
   const handleCardClick = (data) => {
     setSelectedCardData(data);
     setShowModal(true);
@@ -164,11 +148,11 @@ function LandingPage() {
             "count": 4
           },
           {
-            "_id": "detroit",
+            "_id": "bangkok",
             "count": 2
           },
           {
-            "_id": "wyoming",
+            "_id": "stockholm",
             "count": 1
           },
           {
