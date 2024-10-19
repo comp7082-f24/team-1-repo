@@ -14,23 +14,23 @@ function LandingPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedCardData, setSelectedCardData] = useState(null);
   const [cardInfoArray, setCardInfoArray] = useState([]);
-  // const [popularQueries, setPopularQueries] = useState([]);
+  const [popularQueries, setPopularQueries] = useState([]);
 
   // dummy data
-  const popularQueries = [
-    {
-      "_id": "vancouver",
-      "count": 4
-    },
-    {
-      "_id": "detroit",
-      "count": 2
-    },
-    {
-      "_id": "wyoming",
-      "count": 1
-    }
-  ];
+  // const popularQueries = [
+  //   {
+  //     "_id": "vancouver",
+  //     "count": 4
+  //   },
+  //   {
+  //     "_id": "detroit",
+  //     "count": 2
+  //   },
+  //   {
+  //     "_id": "wyoming",
+  //     "count": 1
+  //   }
+  // ];
 
   const handleCardClick = (data) => {
     setSelectedCardData(data);
@@ -128,28 +128,80 @@ function LandingPage() {
       });
   };
 
-  // grab data from wikipedia
   useEffect(() => {
-    const fetchQueryData = async () => {
+    const fetchPopularQueryAndWikiData = async () => {
       try {
-        const dataArray = await Promise.all(
-          popularQueries.map(async (query) => {
-            const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query._id)}`);
-            if (!response.ok) {
+        // Step 1: Fetch popular queries from the database
+        const queryResponse = await fetch('/popularqueries');
+        if (!queryResponse.ok) {
+          throw new Error("Couldn't fetch queries");
+        }
+        const popularQueryData = await queryResponse.json();
+        setPopularQueries(popularQueryData);
+
+        // Step 2: Fetch data from Wikipedia based on popular queries
+        const wikiDataArray = await Promise.all(
+          popularQueryData.map(async (query) => {
+            const wikiResponse = await fetch(
+              `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query._id)}`
+            );
+            if (!wikiResponse.ok) {
               throw new Error('Location not found.');
             }
-            const data = await response.json();
-            return { ...data, count: query.count };
+            const wikiData = await wikiResponse.json();
+            return { ...wikiData, count: query.count };
           })
         );
-        setCardInfoArray(dataArray);
+        setCardInfoArray(wikiDataArray);
+
       } catch (error) {
         console.error(error);
+
+        // In case of an error fetching queries, use dummy data
+        const dummyData = [
+          {
+            "_id": "vancouver",
+            "count": 4
+          },
+          {
+            "_id": "detroit",
+            "count": 2
+          },
+          {
+            "_id": "wyoming",
+            "count": 1
+          },
+          {
+            "_id": "rome",
+            "count": 1
+          }
+        ];
+        setPopularQueries(dummyData);
+
+        // Fetch Wikipedia data for dummy data
+        try {
+          const dummyWikiDataArray = await Promise.all(
+            dummyData.map(async (query) => {
+              const wikiResponse = await fetch(
+                `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query._id)}`
+              );
+              if (!wikiResponse.ok) {
+                throw new Error('Location not found.');
+              }
+              const wikiData = await wikiResponse.json();
+              return { ...wikiData, count: query.count };
+            })
+          );
+          setCardInfoArray(dummyWikiDataArray);
+        } catch (wikiError) {
+          console.error(wikiError);
+        }
       }
     };
 
-    fetchQueryData();
+    fetchPopularQueryAndWikiData();
   }, []);
+
 
   return (
     <div>

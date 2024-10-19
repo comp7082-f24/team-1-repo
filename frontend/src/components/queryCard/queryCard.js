@@ -6,7 +6,6 @@ function QueryCard({ index, onClick, thumbnail, data }) {
             <div className="relative h-48">
                 <img
                     src={thumbnail}
-                    alt="Activity Image"
                     className="object-cover w-full h-full rounded-tl-lg rounded-tr-lg"
                 />
             </div>
