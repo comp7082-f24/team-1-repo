@@ -20,11 +20,11 @@ function PopupModal({ data, onClose }) {
                     X
                 </button>
                 <h2 className="text-2xl font-bold mb-4">{data.title || 'Destination'}</h2>
-                <p>{data.description || 'More information about this activity or destination.'}</p>
-                <div className="mt-4">
+                <p>{data.extract || 'More information about this activity or destination.'}</p>
+                {/* <div className="mt-4">
                     <p><strong>Rating:</strong> {data.rating || '★★★★★'}</p>
                     <p><strong>Price:</strong> {data.price || 'Free'}</p>
-                </div>
+                </div> */}
             </div>
         </div>
     );

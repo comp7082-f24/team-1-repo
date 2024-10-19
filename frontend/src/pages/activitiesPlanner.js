@@ -133,7 +133,7 @@ function ActivitiesPlanner({
         <div className="flex flex-row items-start col-span-12 space-x-4">
           {locationInfo.thumbnail && (
             <img
-              src={locationInfo.thumbnail.source}
+              src={locationInfo.originalimage.source}
               alt={locationInfo.title}
               className="w-1/4 rounded-md"
             />

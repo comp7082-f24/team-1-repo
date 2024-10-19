@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SearchIcon, LocationMarkerIcon } from '@heroicons/react/solid';
 import '../App.css';
 import DataCard from '../components/DataCard';
-import ActivityCard from '../components/activityCard/activityCard';
-import PopupModal from '../components/activityCard/popupModal'
+import QueryCard from '../components/queryCard/queryCard';
+import PopupModal from '../components/queryCard/popupModal';
+import placeholder from '../images/placeholder.png';
 
 function LandingPage() {
   const [location, setLocation] = useState('');
@@ -12,11 +13,28 @@ function LandingPage() {
   const [dailyWeatherData, setDailyWeatherData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedCardData, setSelectedCardData] = useState(null);
+  const [cardInfoArray, setCardInfoArray] = useState([]);
+  // const [popularQueries, setPopularQueries] = useState([]);
+
+  // dummy data
+  const popularQueries = [
+    {
+      "_id": "vancouver",
+      "count": 4
+    },
+    {
+      "_id": "detroit",
+      "count": 2
+    },
+    {
+      "_id": "wyoming",
+      "count": 1
+    }
+  ];
 
   const handleCardClick = (data) => {
     setSelectedCardData(data);
     setShowModal(true);
-    console.log('open: ', data)
   };
 
   const handleClosePopup = () => {
@@ -110,6 +128,28 @@ function LandingPage() {
       });
   };
 
+  // grab data from wikipedia
+  useEffect(() => {
+    const fetchQueryData = async () => {
+      try {
+        const dataArray = await Promise.all(
+          popularQueries.map(async (query) => {
+            const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query._id)}`);
+            if (!response.ok) {
+              throw new Error('Location not found.');
+            }
+            const data = await response.json();
+            return { ...data, count: query.count };
+          })
+        );
+        setCardInfoArray(dataArray);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchQueryData();
+  }, []);
 
   return (
     <div>
@@ -222,11 +262,13 @@ function LandingPage() {
 
           {/* Cards */}
           <div className="grid grid-cols-2 gap-4">
-            {[...Array(4)].map((_, index) => (
-              <ActivityCard
+            {cardInfoArray.map((info, index) => (
+              <QueryCard
                 key={index}
                 index={index}
-                onClick={() => handleCardClick({ title: 'Destination', description: 'More information', rating: '★★★★★', price: 'Free' })}
+                thumbnail={info.originalimage?.source ? info.originalimage.source : placeholder}
+                data={info}
+                onClick={() => handleCardClick(info)}
               />
             ))}
           </div>
