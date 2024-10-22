@@ -321,7 +321,7 @@ function LandingPage() {
             </button>
           </div>
         </div>
-        <div className="blurred-bg" />
+        <div className="bg" />
       </div>
 
       {/* Display DataCard when dailyWeatherData is available */}

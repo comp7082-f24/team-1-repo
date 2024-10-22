@@ -1,10 +1,9 @@
-.blurred-bg {
-    background-image: url('./images/placeholder.png');
+.bg {
+    background-image: url('./images/image6.jpg');
     background-size: 100%;
-    background-position: center;
-    filter: blur(6px);
+    background-position: top 47% right 50%;
     position: absolute;
-    top: 0;
+    top:0;
     left: 0;
     right: 0;
     bottom: 0;
