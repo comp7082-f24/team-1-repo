@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-// Replace with your Amadeus API credentials
-const AMADEUS_API_KEY = 'xbXo723ATDIAuIVPcGxsO88HC8K8GpH9';
-const AMADEUS_API_SECRET = 'cAEsD28jqbsL3yWV';
+// Replace with your Geoapify API key
+const GEOAPIFY_API_KEY = 'GEOAPIFY_API_KEY';
 
 const ActivityCards = ({ latitude, longitude }) => {
   const [activities, setLocalActivities] = useState([]);
@@ -10,48 +9,18 @@ const ActivityCards = ({ latitude, longitude }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchAccessToken = async () => {
-      try {
-        const response = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-            'grant_type': 'client_credentials',
-            'client_id': AMADEUS_API_KEY,
-            'client_secret': AMADEUS_API_SECRET,
-          }),
-        });
-
-        const data = await response.json();
-        return data.access_token;
-      } catch (err) {
-        console.error('Error fetching access token:', err);
-        setError('Failed to get API access token');
-      }
-    };
-    console.log(latitude, longitude);
-
-    const fetchActivities = async (accessToken) => {
+    const fetchActivities = async () => {
       try {
         const response = await fetch(
-          `https://test.api.amadeus.com/v1/shopping/activities?latitude=${latitude}&longitude=${longitude}&radius=5`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
+          `https://api.geoapify.com/v2/places?categories=entertainment&bias=proximity:${longitude},${latitude}&limit=5&apiKey=${GEOAPIFY_API_KEY}&circle=circle:${longitude},${latitude},1000`
         );
-        console.log(response);
 
         if (!response.ok) {
           throw new Error('Error fetching activities');
         }
 
         const data = await response.json();
-        console.log(data.data);
-        setLocalActivities(data.data);  // Store activities in the local state
+        setLocalActivities(data.features); // Store activities from Geoapify response
         setLoading(false);
       } catch (err) {
         console.error('Error fetching activities:', err);
@@ -60,14 +29,9 @@ const ActivityCards = ({ latitude, longitude }) => {
       }
     };
 
-    const initFetch = async () => {
-      const accessToken = await fetchAccessToken();
-      if (accessToken) {
-        fetchActivities(accessToken);
-      }
-    };
-
-    initFetch();
+    if (latitude && longitude) {
+      fetchActivities();
+    }
   }, [latitude, longitude]);
 
   if (loading) {
@@ -81,10 +45,10 @@ const ActivityCards = ({ latitude, longitude }) => {
   return (
     <div>
       <h2>Nearby Points of Interest</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
         {activities.map(activity => (
           <div
-            key={activity.id}
+            key={activity.properties.id}
             style={{
               border: '1px solid #ccc',
               borderRadius: '8px',
@@ -92,12 +56,30 @@ const ActivityCards = ({ latitude, longitude }) => {
               margin: '10px',
               width: '250px',
               boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+              display: 'flex',
+              flexDirection: 'column',
+              height: 'auto', // Allow flexible height
+              maxHeight: '400px', // Set a maximum height for the card
+              overflow: 'hidden', // Prevent overflow
             }}
           >
-            <h3>{activity.name}</h3>
-            <p>{activity.category}</p>
-            <p><strong>Distance:</strong> {activity.distance} meters</p>
-            <p><strong>Geo Location:</strong> {activity.geoCode.latitude}, {activity.geoCode.longitude}</p>
+            <h3 style={{ marginBottom: '10px', fontSize: '1.25rem' }}>
+              {activity.properties.name || 'No Name Available'}
+            </h3>
+            <p style={{ marginBottom: '10px', overflowWrap: 'break-word' }}>
+              {activity.properties.categories
+                ? activity.properties.categories.join(', ')
+                : 'No categories available'}
+            </p>
+            <p style={{ marginBottom: '5px' }}>
+              <strong>Distance:</strong> {activity.properties.distance || 'Unknown'} meters
+            </p>
+            <p style={{ marginBottom: '5px' }}>
+              <strong>Address:</strong> {activity.properties.formatted || 'No address available'}
+            </p>
+            <p>
+              <strong>City:</strong> {activity.properties.county || 'No city available'}
+            </p>
           </div>
         ))}
       </div>
