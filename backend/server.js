@@ -166,7 +166,12 @@ app.post('/savequery', async (req, res) => {
 
     try {
         await mongoose.connect(uri);
-        const newSavedQuery = new SavedQuery({ userId: fields.userId, searchQuery: fields.searchQuery})
+        const newSavedQuery = new SavedQuery({ 
+            userId: fields.userId, 
+            searchQuery: fields.searchQuery, 
+            startDate: fields.startDate, 
+            endDate: fields.endDate 
+        });
         await newSavedQuery.save();
         res.status(200).json({ message: 'Query Saved!' });
     } catch (err) {

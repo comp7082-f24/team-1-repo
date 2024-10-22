@@ -113,7 +113,7 @@ function LandingPage() {
   };
 
   const saveQuery = async () => {
-    if (!location) {
+    if (!location || !startDate || !endDate ) {
       return;
     }
 
@@ -128,7 +128,11 @@ function LandingPage() {
         const response = await fetch('/savequery', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: authData.user.id, searchQuery: location })
+          body: JSON.stringify({ 
+            userId: authData.user.id, 
+            searchQuery: location, 
+            startDate, 
+            endDate })
         });
         if (!response.ok) {
           console.error('Something went wrong');
@@ -138,7 +142,11 @@ function LandingPage() {
         const response = await fetch('/savequery', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ searchQuery: location })
+          body: JSON.stringify({ 
+            searchQuery: location, 
+            startDate, 
+            endDate 
+          })
         });
         if (!response.ok) {
           console.error('Something went wrong');
