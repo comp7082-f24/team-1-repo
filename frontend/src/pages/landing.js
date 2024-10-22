@@ -112,6 +112,43 @@ function LandingPage() {
       });
   };
 
+  const saveQuery = async () => {
+    if (!location) {
+      return;
+    }
+
+    try {
+      const authResponse = await fetch('/isauth', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      const authData = await authResponse.json();
+      // path if user is signed in 
+      if (authData.authenticated) {
+        const response = await fetch('/savequery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: authData.user.id, searchQuery: location })
+        });
+        if (!response.ok) {
+          console.error('Something went wrong');
+        } 
+        // path if they are signed out
+      } else {
+        const response = await fetch('/savequery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ searchQuery: location })
+        });
+        if (!response.ok) {
+          console.error('Something went wrong');
+        } 
+      }
+    } catch (error) {
+      console.error('Unexpected Error: ', error);
+    }
+  }
+
   useEffect(() => {
     const fetchPopularQueryAndWikiData = async () => {
       try {
@@ -263,8 +300,12 @@ function LandingPage() {
               <p className="text-gray-500 text-xs">Please enter the end date of your trip</p>
             </div>
 
+            {/** Handle search and save query */}
             <button
-              onClick={handleSearch}
+              onClick={() => {
+                handleSearch();
+                saveQuery();
+              }}
               className="bg-black text-white py-2 px-4 rounded-md hover:bg-gray-600 flex items-center"
             >
               Search
