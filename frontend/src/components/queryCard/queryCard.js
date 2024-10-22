@@ -13,6 +13,7 @@ function QueryCard({ index, onClick, thumbnail, data }) {
                 <div>
                     <h2 className="text-lg font-bold">{data.title}</h2>
                     <p className="text-gray-500 mb-6">{data.description}</p>
+                    <p className="text-gray-500 mb-6">Searches: {data.count}</p>
                     {/* <p className="text-gray-500">...</p>
                     <div className="flex items-center">
                         <span className="text-yellow-500 mr-1">★★★★★</span>
