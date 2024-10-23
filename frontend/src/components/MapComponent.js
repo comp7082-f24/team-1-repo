@@ -11,7 +11,6 @@ const containerStyle = {
 const initialCenter = { lat: 0, lng: 0 };
 
 // Replace with your Geoapify API key
-const GEOAPIFY_API_KEY = 'GEOAPIFY_API_KEY';
 
 const MapComponent = ({ location }) => {
     const [coordinates, setCoordinates] = useState(initialCenter); // Center of the map (start position)
@@ -40,7 +39,7 @@ const MapComponent = ({ location }) => {
 
     // Function to fetch nearby activities from Geoapify
     const fetchPlaces = (lat, lng) => {
-        const placesURL = `https://api.geoapify.com/v2/places?categories=tourism&bias=proximity:${lng},${lat}&limit=10&apiKey=${GEOAPIFY_API_KEY}&circle=circle:${lng},${lat},1000`;
+        const placesURL = `https://api.geoapify.com/v2/places?categories=tourism&bias=proximity:${lng},${lat}&limit=10&apiKey=${process.env.REACT_APP_GEOAPIFY_API_KEY}&circle=circle:${lng},${lat},1000`;
 
         fetch(placesURL)
             .then(response => response.json())
@@ -64,7 +63,7 @@ const MapComponent = ({ location }) => {
 
     return (
         <div>
-            <LoadScript googleMapsApiKey="googleMapsApiKey">
+            <LoadScript googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
                 <GoogleMap
                     mapContainerStyle={containerStyle}
                     center={coordinates}
