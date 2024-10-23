@@ -5,6 +5,8 @@ import DataCard from '../components/DataCard';
 import QueryCard from '../components/queryCard/queryCard';
 import PopupModal from '../components/queryCard/popupModal';
 import placeholder from '../images/placeholder.png';
+import MapComponent from '../components/MapComponent';
+import ActivityCards from '../components/ActivityCards';
 
 function LandingPage() {
   const [location, setLocation] = useState('');
@@ -24,6 +26,8 @@ function LandingPage() {
   const handleClosePopup = () => {
     setShowModal(false);
   };
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
 
   const handleLocationChange = (e) => {
     setLocation(e.target.value);
@@ -51,8 +55,10 @@ function LandingPage() {
     let URL = `https://geocoding-api.open-meteo.com/v1/search?name=${location}&count=1&language=en&format=json`;
 
     fetch(URL)
-      .then((response) => response.json())
-      .then((data) => {
+      .then(response => response.json())
+      .then(data => {
+        setLongitude(data.results[0].longitude);
+        setLatitude(data.results[0].latitude);
         let longitude = data.results[0].longitude;
         let latitude = data.results[0].latitude;
 
@@ -332,6 +338,7 @@ function LandingPage() {
           {dailyWeatherData.map((data, index) => (
             <DataCard
               key={index}
+              location={location}
               date={data.date}
               temperature={data.averageTemperature}
               precipitation={data.averagePrecipitation}
@@ -340,8 +347,13 @@ function LandingPage() {
         </div>
       )}
 
-
-      {/* Bottom section */}
+      {/* /* Display MapComponent and ActivityCards when search has been made */}
+      {latitude && longitude && (
+        <>
+          <MapComponent location={location} />
+          <ActivityCards latitude={latitude} longitude={longitude} />
+        </>
+      )}
       <div className="bg-white">
         <div className="max-w-6xl mx-auto p-4 mb-10">
           <h2 className="mb-4 mt-20 text-6xl">Most Popular Queries</h2>
@@ -364,5 +376,5 @@ function LandingPage() {
     </div>
   );
 }
-
+ 
 export default LandingPage;
