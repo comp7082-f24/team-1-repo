@@ -5,3 +5,5 @@ npm run build
 cd ..
 <br>
 npm start
+
+https://team-1-repo.pages.dev/ 
