@@ -108,6 +108,8 @@ function ActivitiesPlanner({
   }
 
   useEffect(() => {
+    document.title = 'Activities Planner';
+
     // Temporary location (this doesn't have to be a location. can be literally anything on wikipedia)
     const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(location)}`;
 

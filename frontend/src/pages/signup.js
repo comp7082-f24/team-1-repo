@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import traveltime from "../images/traveltime.png";
 
 function Signup() {
@@ -7,6 +7,10 @@ function Signup() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+
+    useEffect(() => {
+        document.title = "Sign Up";
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

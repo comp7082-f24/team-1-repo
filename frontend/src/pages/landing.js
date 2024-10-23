@@ -158,6 +158,8 @@ function LandingPage() {
   }
 
   useEffect(() => {
+    document.title = 'Travel Time'
+
     const fetchPopularQueryAndWikiData = async () => {
       try {
         // Fetch popular queries from the database

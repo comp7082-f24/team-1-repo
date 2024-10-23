@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SunIcon, BellIcon, ExternalLinkIcon} from '@heroicons/react/solid';
 import placeholder from '../images/placeholder.png'
 
 function DestinationDetails() {
     const [openIndex, setOpenIndex] = useState(null);
+
+    useEffect(() => {
+        document.title = "Destination Details";
+    }, []);
 
     const toggleAnswer = (index) => {
         setOpenIndex(openIndex === index ? null : index);

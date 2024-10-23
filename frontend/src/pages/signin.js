@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import traveltime from '../images/traveltime.png';
 
 function SignIn() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
+
+    useEffect(() => {
+        document.title = "Sign In";
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
