@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 // Replace with your Geoapify API key
-const GEOAPIFY_API_KEY = process.env.GEOAPIFY_API_KEY;
+const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
 
 const ActivityCards = ({ latitude, longitude }) => {
   const [activities, setLocalActivities] = useState([]);
@@ -12,7 +12,7 @@ const ActivityCards = ({ latitude, longitude }) => {
     const fetchActivities = async () => {
       try {
         const response = await fetch(
-          `https://api.geoapify.com/v2/places?categories=entertainment&bias=proximity:${longitude},${latitude}&limit=5&apiKey=${GEOAPIFY_API_KEY}&circle=circle:${longitude},${latitude},1000`
+          `https://api.geoapify.com/v2/places?categories=entertainment,tourism&limit=10&apiKey=${GEOAPIFY_API_KEY}&filter=circle:${longitude},${latitude},10000`
         );
 
         if (!response.ok) {
