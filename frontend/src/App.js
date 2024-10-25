@@ -7,6 +7,7 @@ import ActivitiesPlanner from './pages/activitiesPlanner.js';
 import DestinationDetails from './pages/destinationDetails.js';
 import SignIn from './pages/signin'
 import Signup from './pages/signup';
+import UserProfile from './pages/userProfile'
 
 function App() {
   const location = useLocation();
@@ -22,6 +23,7 @@ function App() {
         <Route path="/planner" element={<ActivitiesPlanner />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/profile" element={<UserProfile />}/>
       </Routes>
       {!hideComponents && <Footer />}
     </div>
