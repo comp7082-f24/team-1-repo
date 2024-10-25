@@ -2,6 +2,9 @@ import { useCallback, useState, useEffect } from "react";
 import Calendar from "../components/calendar/calendar";
 import EventCard from "../components/eventCard/eventCard";
 import Tabs from "../components/Tabs/tabs";
+import MapComponent from "../components/MapComponent";
+import ActivityCards from "../components/ActivityCards";
+import { useLocationData, useWeather } from "../utils/contexts";
 
 let eventGuid = 0;
 
@@ -48,18 +51,14 @@ const mockEvents = new Array(30)
     {}
   );
 
-function ActivitiesPlanner({
-  startDate = "2024-10-09T00:00:00-07:00",
-  events = {
-    "2024-10-09T00:00:00-07:00": [],
-  },
-  location = "Vancouver"
-}) {
+function ActivitiesPlanner({ startDate = "2024-10-09T00:00:00-07:00" }) {
   const [calendarApi, setCalendarApi] = useState(null);
   const [tripPlan, setTripPlan] = useState({});
   const [availableEvents, setAvailableEvents] = useState(mockEvents);
   const [dateSelected, setDateSelected] = useState(startDate);
-  const [_, setTabSelected] = useState(0);
+  const [weatherData, setWeatherData] = useWeather();
+  const [locationData, setLocationData] = useLocationData();
+  const [, setTabSelected] = useState(0);
   const [locationInfo, setLocationInfo] = useState({});
 
   const handleCalendarInitialization = useCallback((api) => {
@@ -108,19 +107,21 @@ function ActivitiesPlanner({
   }
 
   useEffect(() => {
-    document.title = 'Activities Planner';
+    document.title = "Activities Planner";
 
     // Temporary location (this doesn't have to be a location. can be literally anything on wikipedia)
-    const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(location)}`;
+    const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+      locationData.location
+    )}`;
 
     const fetchLocationData = async () => {
       try {
         const response = await fetch(URL);
         if (!response.ok) {
-          throw new Error('Location not found.');
+          throw new Error("Location not found.");
         }
         const data = await response.json();
-        setLocationInfo(data); 
+        setLocationInfo(data);
       } catch (error) {
         console.error(error);
       }
@@ -145,57 +146,65 @@ function ActivitiesPlanner({
           )}
         </div>
       </div>
-    <div class="w-[95%] m-4 mx-auto p-4 border-2 rounded-md grid grid-cols-12 gap-4 h-[1000px]">
-      <div class="flex flex-col h-[950px] box-border align-center col-span-4 border-2 p-2 rounded-md overflow-hidden">
-        <Tabs
-          onTabChange={handleTabChange}
-          defaultActiveId={"activities-available"}
-          data={[
-            {
-              id: "activities-available",
-              name: "Activities Available",
-              content: (
-                <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-                  {availableEvents?.[dateSelected]?.map((event) => (
-                    <li key={event.id}>
-                      <EventCard event={event} onAddEvent={handleAddEvent} />
-                    </li>
-                  ))}
-                </ul>
-              ),
-            },
-            {
-              id: "activities-added",
-              name: "Activities Added",
-              content: (
-                <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-                  {tripPlan?.[dateSelected]?.map((event) => (
-                    <li key={event.id}>
-                      <EventCard
-                        event={event}
-                        onRemoveEvent={handleRemoveEvent}
-                        isAdded={true}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              ),
-            },
-          ]}
-        />
+      <div class="w-[95%] m-4 mx-auto p-4 border-2 rounded-md grid grid-cols-12 gap-4 h-[1200px]">
+        <div class="flex flex-col h-[1100px] box-border align-center col-span-4 border-2 p-2 rounded-md overflow-hidden">
+          <Tabs
+            onTabChange={handleTabChange}
+            defaultActiveId={"activities-available"}
+            data={[
+              {
+                id: "activities-available",
+                name: "Activities Available",
+                content: (
+                  <ActivityCards
+                    latitude={locationData.latitude}
+                    longitude={locationData.longitude}
+                  />
+
+                  // <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                  //   {availableEvents?.[dateSelected]?.map((event) => (
+                  //     <li key={event.id}>
+                  //       <EventCard event={event} onAddEvent={handleAddEvent} />
+                  //     </li>
+                  //   ))}
+                  // </ul>
+                ),
+              },
+              {
+                id: "activities-added",
+                name: "Activities Added",
+                content: (
+                  <ul class="flex flex-col h-[1100px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                    {tripPlan?.[dateSelected]?.map((event) => (
+                      <li key={event.id}>
+                        <EventCard
+                          event={event}
+                          onRemoveEvent={handleRemoveEvent}
+                          isAdded={true}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                ),
+              },
+            ]}
+          />
+        </div>
+        <div class="col-span-8">
+          <Calendar
+            // initialEvents={mockReservedEvents}
+            initialDaySelected={dateSelected}
+            onCalendarInitialized={handleCalendarInitialization}
+            // onEventAdded={handleEventAdded}
+            // onEventRemoved={handleEventRemoved}
+            onDateSelected={handleDateSelected}
+            weatherData={mockWeatherData}
+          />
+          {locationData?.location && (
+            <MapComponent location={locationData.location} />
+          )}
+        </div>
       </div>
-      <div class="col-span-8">
-        <Calendar
-          // initialEvents={mockReservedEvents}
-          initialDaySelected={dateSelected}
-          onCalendarInitialized={handleCalendarInitialization}
-          // onEventAdded={handleEventAdded}
-          // onEventRemoved={handleEventRemoved}
-          onDateSelected={handleDateSelected}
-          weatherData={mockWeatherData}
-        />
-      </div>
-    </div>
     </div>
   );
 }

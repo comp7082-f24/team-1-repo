@@ -92,9 +92,9 @@ const MapComponent = ({ location }) => {
                     )}
 
                     {/* Display markers for nearby activities fetched from Geoapify */}
-                    {activities.map(activity => (
+                    {activities.map((activity,i) => (
                         <Marker
-                            key={activity.properties.id}
+                            key={`${activity.properties.id}-${i}`}
                             position={{
                                 lat: activity.geometry.coordinates[1], // latitude from Geoapify
                                 lng: activity.geometry.coordinates[0], // longitude from Geoapify

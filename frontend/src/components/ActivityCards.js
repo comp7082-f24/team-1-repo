@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 // Replace with your Geoapify API key
 const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
 
 const ActivityCards = ({ latitude, longitude }) => {
   const [activities, setLocalActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -16,16 +15,14 @@ const ActivityCards = ({ latitude, longitude }) => {
         );
 
         if (!response.ok) {
-          throw new Error('Error fetching activities');
+          throw new Error("Error fetching activities");
         }
 
         const data = await response.json();
         setLocalActivities(data.features); // Store activities from Geoapify response
-        setLoading(false);
       } catch (err) {
-        console.error('Error fetching activities:', err);
+        console.error("Error fetching activities:", err);
         setError(err.message);
-        setLoading(false);
       }
     };
 
@@ -34,55 +31,88 @@ const ActivityCards = ({ latitude, longitude }) => {
     }
   }, [latitude, longitude]);
 
-  if (loading) {
-    return <p>Loading activities...</p>;
-  }
-
   if (error) {
     return <p>Error: {error}</p>;
   }
 
   return (
-    <div>
-      <h2>Nearby Points of Interest</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {activities.map(activity => (
-          <div
-            key={activity.properties.id}
-            style={{
-              border: '1px solid #ccc',
-              borderRadius: '8px',
-              padding: '16px',
-              margin: '10px',
-              width: '250px',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-              display: 'flex',
-              flexDirection: 'column',
-              height: 'auto', // Allow flexible height
-              maxHeight: '400px', // Set a maximum height for the card
-              overflow: 'hidden', // Prevent overflow
-            }}
-          >
-            <h3 style={{ marginBottom: '10px', fontSize: '1.25rem' }}>
-              {activity.properties.name || 'No Name Available'}
-            </h3>
-            <p style={{ marginBottom: '10px', overflowWrap: 'break-word' }}>
-              {activity.properties.categories
-                ? activity.properties.categories.join(', ')
-                : 'No categories available'}
-            </p>
-            <p style={{ marginBottom: '5px' }}>
-              <strong>Distance:</strong> {activity.properties.distance || 'Unknown'} meters
-            </p>
-            <p style={{ marginBottom: '5px' }}>
-              <strong>Address:</strong> {activity.properties.formatted || 'No address available'}
-            </p>
-            <p>
-              <strong>City:</strong> {activity.properties.county || 'No city available'}
-            </p>
+    <div className="h-[1100px] pb-[200px] overflow-auto">
+      {!activities.length &&
+        new Array(10).fill(null).map((item) => (
+          <div class="border border-[#ccc] shadow rounded-md p-4 m-4 mr-6 h-[300px]">
+            <div class="animate-pulse flex space-x-4">
+              <div class="flex-1 space-y-6 py-4">
+                <div class="h-4 bg-slate-700 rounded"></div>
+                <div class="h-2 bg-slate-700 rounded"></div>
+                <div class="h-2 bg-slate-700 rounded"></div>
+                <div class="space-y-4">
+                  <div class="grid grid-cols-12 gap-4">
+                    <div class="h-2 bg-slate-700 rounded col-span-3"></div>
+                    <div class="h-2 bg-slate-700 rounded col-span-9"></div>
+                  </div>
+                  <div class="grid grid-cols-12 gap-4">
+                    <div class="h-2 bg-slate-700 rounded col-span-3"></div>
+                    <div class="h-2 bg-slate-700 rounded col-span-9"></div>
+                  </div>
+                  <div class="grid grid-cols-12 gap-4">
+                    <div class="h-2 bg-slate-700 rounded col-span-3"></div>
+                    <div class="h-2 bg-slate-700 rounded col-span-9"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ))}
-      </div>
+      {activities.map((activity, i) => (
+        <div
+          key={`${activity.properties.id}-${i}`}
+          className="box-border border border-solid border-[#ccc] rounded-md shadow p-4 m-4 mr-6 flex flex-col h-auto max-h-[400px]"
+        >
+          <h3 className="flex">
+            {activity.properties.name || "No Name Available"}
+            {activity.properties.datasource?.raw?.website && (
+              <a
+                className="flex text-lg font-semibold inline"
+                href={activity.properties.datasource?.raw?.website}
+              >
+                <span className="ml-2 text-black">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-6 h-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                    />
+                  </svg>
+                </span>
+              </a>
+            )}
+          </h3>
+          <p style={{ marginBottom: "10px", overflowWrap: "break-word" }}>
+            {activity.properties.categories
+              ? activity.properties.categories.join(", ")
+              : "No categories available"}
+          </p>
+          <p style={{ marginBottom: "5px" }}>
+            <strong>Distance:</strong>{" "}
+            {activity.properties.distance || "Unknown"} meters
+          </p>
+          <p style={{ marginBottom: "5px" }}>
+            <strong>Address:</strong>{" "}
+            {activity.properties.formatted || "No address available"}
+          </p>
+          <p>
+            <strong>City:</strong>{" "}
+            {activity.properties.county || "No city available"}
+          </p>
+        </div>
+      ))}
     </div>
   );
 };

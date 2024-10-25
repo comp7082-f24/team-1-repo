@@ -46,7 +46,7 @@ export default function Calendar({
   }, [onCalendarInitialized]);
 
   return (
-    <div>
+    <div className="mb-4">
       <FullCalendar
         ref={calendarRef}
         height="600px"
