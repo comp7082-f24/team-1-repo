@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 // Replace with your Geoapify API key
-const GEOAPIFY_API_KEY = 'GEOAPIFY_API_KEY';
+const GEOAPIFY_API_KEY = process.env.GEOAPIFY_API_KEY;
 
 const ActivityCards = ({ latitude, longitude }) => {
   const [activities, setLocalActivities] = useState([]);
