@@ -11,7 +11,7 @@ const containerStyle = {
 const initialCenter = { lat: 0, lng: 0 };
 
 // Replace with your Geoapify API key
-const GEOAPIFY_API_KEY = 'GEOAPIFY_API_KEY';
+const GEOAPIFY_API_KEY = process.env.GEOAPIFY_API_KEY;
 
 const MapComponent = ({ location }) => {
     const [coordinates, setCoordinates] = useState(initialCenter); // Center of the map (start position)
@@ -64,7 +64,7 @@ const MapComponent = ({ location }) => {
 
     return (
         <div>
-            <LoadScript googleMapsApiKey="googleMapsApiKey">
+            <LoadScript googleMapsApiKey={process.env.googleMapsApiKey}>
                 <GoogleMap
                     mapContainerStyle={containerStyle}
                     center={coordinates}
