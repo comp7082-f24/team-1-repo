@@ -104,7 +104,7 @@ function SearchHistory({ userId }) {
                                     <p>{query.startDate}</p>
                                     <strong className="block mt-2">End Date</strong>
                                     <p>{query.endDate}</p>
-                                    <strong className="block mt-2">Query Date</strong>
+                                    <strong className="block mt-2">Search Date</strong>
                                     <p>{new Date(query.createdAt).toLocaleDateString()}</p>
                                 </div>
                                 <div className="w-2/5">
@@ -124,7 +124,8 @@ function SearchHistory({ userId }) {
                     {/* Pagination Controls */}
                     <div className="flex justify-between items-center mt-4">
                         <button
-                            className={`px-4 py-2 bg-gray-300 rounded ${currentPage === 1 ? 'cursor-not-allowed' : ''
+                                
+                                className={`px-4 py-2 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-60 ${currentPage === 1 ? 'cursor-not-allowed' : ''
                                 }`}
                             onClick={handlePreviousPage}
                             disabled={currentPage === 1}
@@ -135,7 +136,7 @@ function SearchHistory({ userId }) {
                             Page {currentPage} of {totalPages}
                         </span>
                         <button
-                            className={`px-4 py-2 bg-gray-300 rounded ${currentPage === totalPages ? 'cursor-not-allowed' : ''
+                                className={`px-4 py-2 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-60 ${currentPage === totalPages ? 'cursor-not-allowed' : ''
                                 }`}
                             onClick={handleNextPage}
                             disabled={currentPage === totalPages}

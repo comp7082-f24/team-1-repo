@@ -35,7 +35,10 @@ function UserProfile() {
     const renderContent = () => {
         switch (selectedItem) {
             case 'edit':
-                return <EditProfile user={user} />;
+                return <EditProfile 
+                userId={user ? user.id : null}
+                name={user ? user.username : null}
+                 />;
             case 'search':
                 return <SearchHistory userId={user ? user.id : null} />;
             default:

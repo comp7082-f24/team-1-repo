@@ -29,6 +29,7 @@ connection.once('open', () => {
 app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
 
 
+// GET ROUTES
 app.get("/test", (req, res) => {
     res.send({
         test: "works"
@@ -94,6 +95,8 @@ app.get("/*", function (req, res) {
     });
 });
 
+
+// POST ROUTES
 // signup route
 app.post("/signup", async (req, res) => {
     const fields = req.body;
@@ -206,4 +209,63 @@ app.post('/savequery', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
     console.log(`Click here to open: http://localhost:${port}`)
+});
+
+
+// PUT ROUTES
+// update username
+app.put('/updateusername', async (req, res) => {
+    const { userId, newUsername } = req.body;
+
+    try {
+        await mongoose.connect(uri);
+        const updatedUser = await Account.findByIdAndUpdate(
+            userId,
+            { username: newUsername },
+            { new: true } 
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.status(200).json({ message: 'Username updated successfully', user: updatedUser });
+    } catch (err) {
+        console.error('Error updating username:', err);
+        res.status(500).json({ error: 'Error updating username' });
+    } finally {
+        mongoose.connection.close();
+    }
+});
+
+// update password
+app.put('/updatepassword', async (req, res) => {
+    const { userId, oldPassword, newPassword } = req.body;
+
+    try {
+        await mongoose.connect(uri);
+        const user = await Account.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // check to see if passwords match 
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Old password is incorrect' });
+        }
+
+        // hash new password 
+        const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+        user.password = hashedNewPassword;
+        await user.save();
+
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (err) {
+        console.error('Error updating password:', err);
+        res.status(500).json({ error: 'Error updating password' });
+    } finally {
+        mongoose.connection.close();
+    }
 });
