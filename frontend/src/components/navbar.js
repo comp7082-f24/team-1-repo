@@ -68,7 +68,7 @@ function Navbar() {
                         <li className='max-lg:border-b max-lg:py-3'><a href='javascript:void(0)' className='hover:text-[#007bff] block'>Contact</a></li>
                         {isAuthenticated ? (
                             <>
-                                <li className='max-lg:border-b max-lg:py-3'><span>{user?.username || 'User'}</span></li>
+                                <li className='max-lg:border-b max-lg:py-3'><a href='/profile'>{user?.username || 'User'}</a></li>
                                 <li className='max-lg:border-b max-lg:py-3'><a onClick={handleLogout} className='hover:text-[#007bff] block'>Sign out</a></li>
                             </>
                         ) : (
