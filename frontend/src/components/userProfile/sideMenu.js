@@ -1,13 +1,13 @@
 import React from 'react';
 import { UserCircleIcon, ClockIcon } from '@heroicons/react/outline';
 
-function SideMenu({ setSelectedItem, selectedItem }) {
+function SideMenu({ setSelectedItem, selectedItem, isMobileOpen }) {
     const handleItemClick = (item) => {
         setSelectedItem(item);
     };
 
     return (
-        <div>
+        <div className={`${isMobileOpen ? 'block' : 'hidden'} md:block`}>
             <ul>
                 <li
                     className={`py-2 ${selectedItem === 'edit' ? 'bg-blue-100 m-1 rounded' : ''}`}
