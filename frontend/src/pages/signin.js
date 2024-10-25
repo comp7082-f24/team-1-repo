@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import traveltime from '../images/traveltime.png';
+import traveltime from '../images/logo.svg';
 
 function SignIn() {
     const [email, setEmail] = useState('');
