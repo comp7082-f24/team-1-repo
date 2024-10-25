@@ -64,6 +64,27 @@ app.get('/popularqueries', async (req, res) => {
     }
 });
 
+// get search history using user id
+app.get('/searchhistory/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        await mongoose.connect(uri);
+
+        const searchHistory = await SavedQuery.find({ userId: userId }).sort({ startDate: -1 });
+
+        if (searchHistory.length === 0) {
+            return res.status(404).json({ message: 'No search history found' });
+        }
+
+        res.status(200).json(searchHistory);
+    } catch (err) {
+        console.error('Error fetching search history:', err);
+        res.status(500).json({ error: 'Error fetching search history' });
+    } finally {
+        mongoose.connection.close();
+    }
+});
 
 app.get("/*", function (req, res) {
     res.sendFile(path.join(__dirname, '..', 'frontend/build', 'index.html'), function (err) {
