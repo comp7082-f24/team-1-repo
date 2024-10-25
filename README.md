@@ -1,9 +1,12 @@
-cd client 
-<br>
+cd frontend 
+npm i
 npm run build
 <br>
 cd ..
 <br>
+cd backend
+npm i
 npm start
-
-https://team-1-repo.pages.dev/ 
+<br>
+Live Production deployment:
+https://team-1-repo.onrender.com/
