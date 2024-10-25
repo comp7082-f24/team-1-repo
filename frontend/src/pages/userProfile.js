@@ -37,7 +37,7 @@ function UserProfile() {
             case 'edit':
                 return <EditProfile user={user} />;
             case 'search':
-                return <SearchHistory user={user} />;
+                return <SearchHistory userId={user ? user.id : null} />;
             default:
                 return <p>Select an option from the menu</p>;
         }
