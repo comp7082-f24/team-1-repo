@@ -108,26 +108,26 @@ function ActivitiesPlanner({ startDate = "2024-10-09T00:00:00-07:00" }) {
 
   useEffect(() => {
     document.title = "Activities Planner";
-
-    // Temporary location (this doesn't have to be a location. can be literally anything on wikipedia)
-    const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-      locationData.location
-    )}`;
-
-    const fetchLocationData = async () => {
-      try {
-        const response = await fetch(URL);
-        if (!response.ok) {
-          throw new Error("Location not found.");
+    if (locationData?.location) {
+      // Temporary location (this doesn't have to be a location. can be literally anything on wikipedia)
+      const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+        locationData.location
+      )}`;
+      const fetchLocationData = async () => {
+        try {
+          const response = await fetch(URL);
+          if (!response.ok) {
+            throw new Error("Location not found.");
+          }
+          const data = await response.json();
+          setLocationInfo(data);
+        } catch (error) {
+          console.error(error);
         }
-        const data = await response.json();
-        setLocationInfo(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+      };
 
-    fetchLocationData();
+      fetchLocationData();
+    }
   }, []);
 
   return (
@@ -156,10 +156,18 @@ function ActivitiesPlanner({ startDate = "2024-10-09T00:00:00-07:00" }) {
                 id: "activities-available",
                 name: "Activities Available",
                 content: (
-                  <ActivityCards
-                    latitude={locationData.latitude}
-                    longitude={locationData.longitude}
-                  />
+                  <>
+                    {locationData?.latitude && locationData?.longitude ? (
+                      <ActivityCards
+                        latitude={locationData.latitude}
+                        longitude={locationData.longitude}
+                      />
+                    ) : (
+                      <div className="flex justify-center p-4 m-4">
+                        Please enter a location to search for activities.
+                      </div>
+                    )}
+                  </>
 
                   // <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
                   //   {availableEvents?.[dateSelected]?.map((event) => (
@@ -200,9 +208,7 @@ function ActivitiesPlanner({ startDate = "2024-10-09T00:00:00-07:00" }) {
             onDateSelected={handleDateSelected}
             weatherData={mockWeatherData}
           />
-          {locationData?.location && (
-            <MapComponent location={locationData.location} />
-          )}
+          <MapComponent location={locationData?.location} />
         </div>
       </div>
     </div>
