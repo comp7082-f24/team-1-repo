@@ -13,31 +13,26 @@ interface ILocationData {
   latitude?: number;
   longitude?: number;
 }
-// {
-//   latitude: 52.52,
-//   longitude: 13.419998,
-//   generationtime_ms: 0.051021575927734375,
-//   utc_offset_seconds: 7200,
-//   timezone: "Europe/Berlin",
-//   timezone_abbreviation: "CEST",
-//   elevation: 46.0,
-//   daily_units: { time: "iso8601", weather_code: "wmo code" },
-//   daily: {
-//     time: [
-//       "2024-10-18",
-//       "2024-10-19",
-//       "2024-10-20",
-//       "2024-10-21",
-//       "2024-10-22",
-//       "2024-10-23",
-//       "2024-10-24",
-//     ],
-//     weather_code: [3, 3, 3, 3, 61, 3, 45],
-//   },
-// }
+
+interface IPlaceData {
+  id: string | number;
+  lat: number;
+  lon: number;
+  name: string;
+  opening_hours: string;
+  website: string;
+  country: string;
+  contact: { phone?: string };
+  facilities: { wheelchair?: boolean; toilets?: boolean };
+}
+
+interface ITripPlanData {
+  [date: string]: IPlaceData[];
+}
 
 const WeatherContext = createContext<any>(null);
 const LocationContext = createContext<any>(null);
+const TripPlanContext = createContext<any>(null);
 
 export function useWeather() {
   const [weatherContext, setWeatherContext] = useContext(WeatherContext);
@@ -79,14 +74,41 @@ export function useLocationData() {
   return [getLocationData(), setLocationData];
 }
 
+export function useTripPlanData() {
+  const [tripPlanContext, setTripPlanContext] = useContext(TripPlanContext);
+
+  function setTripPlan(updateTp: (oldTp: ITripPlanData) => ITripPlanData) {
+    setTripPlanContext((oldTp: ITripPlanData) => {
+      const newTp = updateTp(oldTp);
+      sessionStorage.setItem("trip-plan", JSON.stringify(newTp));
+
+      return newTp;
+    });
+  }
+
+  function getTripPlan() {
+    if (Object.keys(tripPlanContext ?? {}).length) return tripPlanContext;
+    const weatherString = sessionStorage.getItem("trip-plan");
+    if (weatherString) {
+      setTripPlanContext(JSON.parse(weatherString));
+      return JSON.parse(weatherString) ?? [];
+    }
+  }
+
+  return [getTripPlan(), setTripPlan];
+}
+
 export function AppContextProvider(props: any) {
   const [weatherContext, setWeatherContext] = useState({});
   const [locationContext, setLocationContext] = useState({});
+  const [tripPlanContext, setTripPlanContext] = useState({});
 
   return (
     <LocationContext.Provider value={[locationContext, setLocationContext]}>
       <WeatherContext.Provider value={[weatherContext, setWeatherContext]}>
-        {props.children}
+        <TripPlanContext.Provider value={[tripPlanContext, setTripPlanContext]}>
+          {props.children}
+        </TripPlanContext.Provider>
       </WeatherContext.Provider>
     </LocationContext.Provider>
   );

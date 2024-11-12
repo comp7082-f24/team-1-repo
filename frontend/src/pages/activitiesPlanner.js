@@ -3,14 +3,12 @@ import Calendar from "../components/calendar/calendar";
 import EventCard from "../components/eventCard/eventCard";
 import Tabs from "../components/Tabs/tabs";
 import MapComponent from "../components/MapComponent";
-import ActivityCards from "../components/ActivityCards";
-import { useLocationData, useWeather } from "../utils/contexts";
-
-let eventGuid = 0;
-
-function createEventId() {
-  return String(eventGuid++);
-}
+import {
+  useLocationData,
+  useWeather,
+  useTripPlanData,
+} from "../utils/contexts";
+import WikiIntro from "../components/WikiIntro";
 
 const mockWeatherData = new Array(30)
   .fill(null)
@@ -25,44 +23,26 @@ const mockWeatherData = new Array(30)
     {}
   );
 
-const mockEvents = new Array(30)
-  .fill(null)
-  .map((_, i) => ({
-    id: createEventId(),
-    title: "Test",
-    start: `2024-10-${i % 3 ? i : 1 + i}T00:00:00.000-07:00`,
-    seats: Math.floor(Math.random() * 4),
-    end: `2024-10-${i % 3 ? i : i + 2}T00:00:00.000-07:00`,
-    allDay: true,
-    duration: 2.5,
-    labels: ["Skip the line", "Small group"],
-    href: "https://www.tripadvisor.ca/Attraction_Review-g294074-d2536796-Reviews-Plaza_de_Mercado_Paloquemao-Bogota.html",
-    image:
-      "https://www.thewowstyle.com/wp-content/uploads/2015/01/nature-images..jpg",
-  }))
-  .reduce(
-    (acc, item, i) => ({
-      ...acc,
-      [item.start.split("T")[0]]: [
-        ...(acc?.[item.start.split("T")[0]] ?? []),
-        item,
-      ],
-    }),
-    {}
-  );
+const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
 
-function ActivitiesPlanner({ startDate = "2024-10-09T00:00:00-07:00" }) {
-  const [calendarApi, setCalendarApi] = useState(null);
-  const [tripPlan, setTripPlan] = useState({});
-  const [availableEvents, setAvailableEvents] = useState(mockEvents);
-  const [dateSelected, setDateSelected] = useState(startDate);
-  const [weatherData, setWeatherData] = useWeather();
+function ActivitiesPlanner() {
+  const [tripPlan, setTripPlan] = useTripPlanData();
+  const [availableActivities, setAvailableActivities] = useState([]);
   const [locationData, setLocationData] = useLocationData();
+  const [weatherData, setWeatherData] = useWeather();
+  const [calendarApi, setCalendarApi] = useState(null);
+  const [dateSelected, setDateSelected] = useState(
+    weatherData["start"] ?? new Date().toISOString()
+  );
+  const [error, setError] = useState(null);
   const [, setTabSelected] = useState(0);
-  const [locationInfo, setLocationInfo] = useState({});
 
   const handleCalendarInitialization = useCallback((api) => {
-    api?.select(startDate);
+    api?.select(dateSelected);
+    Object.keys(tripPlan).forEach((d) => {
+      tripPlan[d]?.forEach((e) => api?.addEvent({ ...e, title: e.name }));
+    });
+
     setCalendarApi(api);
   }, []);
 
@@ -71,33 +51,30 @@ function ActivitiesPlanner({ startDate = "2024-10-09T00:00:00-07:00" }) {
   }
 
   function handleAddEvent(event) {
-    calendarApi.addEvent(event);
-    const eventStart = event?.start?.split("T")[0];
+    const newEvent = { ...event, id: event.place_id, start: dateSelected };
+    calendarApi.addEvent({
+      ...newEvent,
+      id: event.place_id,
+      title: event.name,
+    });
 
-    setAvailableEvents((ae) => ({
-      ...ae,
-      [eventStart]: ae?.[eventStart]?.filter((ev) => ev.id !== event.id),
-    }));
+    setAvailableActivities((ae) =>
+      ae?.filter((ev) => ev.place_id !== event.place_id)
+    );
     setTripPlan((plan) => ({
       ...plan,
-      [eventStart]: [...(plan?.[eventStart] ?? []), event],
+      [dateSelected]: [...(plan?.[dateSelected] ?? []), newEvent],
     }));
   }
 
   function handleRemoveEvent(event) {
     const eventStart = event?.start?.split("T")[0];
     const ce = calendarApi.getEventById(event.id);
-
-    setAvailableEvents((ae) => ({
-      ...ae,
-      [eventStart]: [
-        ...(ae?.[eventStart]?.filter((ev) => ev.id !== event.id) ?? []),
-        event,
-      ],
-    }));
+    setAvailableActivities((ae) => [...ae, event]);
     setTripPlan((tp) => ({
       ...tp,
-      [eventStart]: tp?.[eventStart]?.filter((ev) => ev.id !== event.id) ?? [],
+      [eventStart]:
+        tp?.[eventStart]?.filter((ev) => ev.place_id !== event.id) ?? [],
     }));
     ce?.remove();
   }
@@ -108,43 +85,36 @@ function ActivitiesPlanner({ startDate = "2024-10-09T00:00:00-07:00" }) {
 
   useEffect(() => {
     document.title = "Activities Planner";
-    if (locationData?.location) {
-      // Temporary location (this doesn't have to be a location. can be literally anything on wikipedia)
-      const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-        locationData.location
-      )}`;
-      const fetchLocationData = async () => {
-        try {
-          const response = await fetch(URL);
-          if (!response.ok) {
-            throw new Error("Location not found.");
-          }
-          const data = await response.json();
-          setLocationInfo(data);
-        } catch (error) {
-          console.error(error);
-        }
-      };
-
-      fetchLocationData();
-    }
   }, []);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const response = await fetch(
+          `https://api.geoapify.com/v2/places?categories=entertainment,tourism&limit=10&apiKey=${GEOAPIFY_API_KEY}&filter=circle:${locationData.longitude},${locationData.latitude},10000`
+        );
+
+        if (!response.ok) {
+          throw new Error("Error fetching activities");
+        }
+
+        const data = await response.json();
+        setAvailableActivities(data.features.map((f) => f.properties)); // Store activities from Geoapify response
+      } catch (err) {
+        console.error("Error fetching activities:", err);
+        setError(err.message);
+      }
+    };
+
+    if (locationData.latitude && locationData.longitude) {
+      fetchActivities();
+    }
+  }, [locationData.latitude, locationData.longitude]);
 
   return (
     <div>
       <div className="w-[95%] m-4 mx-auto p-4 grid grid-cols-12 gap-4">
-        <div className="flex flex-row items-start col-span-12 space-x-4">
-          {locationInfo.thumbnail && (
-            <img
-              src={locationInfo.originalimage.source}
-              alt={locationInfo.title}
-              className="w-1/4 rounded-md"
-            />
-          )}
-          {locationInfo.extract && (
-            <p className="w-3/4">{locationInfo.extract}</p>
-          )}
-        </div>
+        <WikiIntro />
       </div>
       <div class="w-[95%] m-4 mx-auto p-4 border-2 rounded-md grid grid-cols-12 gap-4 h-[1200px]">
         <div class="flex flex-col h-[1100px] box-border align-center col-span-4 border-2 p-2 rounded-md overflow-hidden">
@@ -158,24 +128,22 @@ function ActivitiesPlanner({ startDate = "2024-10-09T00:00:00-07:00" }) {
                 content: (
                   <>
                     {locationData?.latitude && locationData?.longitude ? (
-                      <ActivityCards
-                        latitude={locationData.latitude}
-                        longitude={locationData.longitude}
-                      />
+                      <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                        {availableActivities?.map((event) => (
+                          <li key={event.id}>
+                            <EventCard
+                              event={event}
+                              onAddEvent={handleAddEvent}
+                            />
+                          </li>
+                        ))}
+                      </ul>
                     ) : (
                       <div className="flex justify-center p-4 m-4">
                         Please enter a location to search for activities.
                       </div>
                     )}
                   </>
-
-                  // <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-                  //   {availableEvents?.[dateSelected]?.map((event) => (
-                  //     <li key={event.id}>
-                  //       <EventCard event={event} onAddEvent={handleAddEvent} />
-                  //     </li>
-                  //   ))}
-                  // </ul>
                 ),
               },
               {
@@ -200,11 +168,8 @@ function ActivitiesPlanner({ startDate = "2024-10-09T00:00:00-07:00" }) {
         </div>
         <div class="col-span-8">
           <Calendar
-            // initialEvents={mockReservedEvents}
             initialDaySelected={dateSelected}
             onCalendarInitialized={handleCalendarInitialization}
-            // onEventAdded={handleEventAdded}
-            // onEventRemoved={handleEventRemoved}
             onDateSelected={handleDateSelected}
             weatherData={mockWeatherData}
           />

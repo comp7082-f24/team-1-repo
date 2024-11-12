@@ -124,6 +124,12 @@ function LandingPage() {
                 dailyWeatherData?.daily?.weather_code?.length
               ) {
                 dailyWeatherData?.daily?.time.forEach((d, i) => {
+                  if (i === 0) {
+                    weatherDataResult["start"] = d;
+                  }
+                  if (i === dailyWeatherData?.daily?.time.length - 1) {
+                    weatherDataResult["end"] = d;
+                  }
                   weatherDataResult[d] = {
                     ...(weatherDataResult?.[d] ?? {}),
                     weatherCode: dailyWeatherData?.daily?.weather_code?.[i],

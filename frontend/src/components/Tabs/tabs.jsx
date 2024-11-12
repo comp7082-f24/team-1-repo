@@ -22,12 +22,7 @@ function Tabs({ data, onTabChange, defaultActiveId }) {
 
 function TabHeader({ data, onTabTriggerClick, activeId }) {
   return (
-    <div
-      className="w-full grid grid-cols-2 p-2 bg-slate-100 rounded-md"
-      style={{
-        backgroundColor: "rgb(241 245 249)",
-      }}
-    >
+    <div className="w-full grid grid-cols-2 p-2 bg-slate-300 rounded-md">
       {data.map((item) => (
         <button
           className="py-2 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow"

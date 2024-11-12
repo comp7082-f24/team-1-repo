@@ -24,9 +24,6 @@ export default function Calendar({
   initialDaySelected = new Date(),
   initialEvents = [],
   onCalendarInitialized,
-  // onDateChanged,
-  // onEventAdded,
-  // onEventRemoved,
   onDateSelected,
   weatherData,
 }) {
@@ -58,17 +55,11 @@ export default function Calendar({
         }}
         initialView="dayGridMonth"
         monthStartFormat={{ month: "short", day: "numeric" }}
-        // editable={true}
-        // customButtons={{
-
-        // }}
         selectable={true}
         unselectAuto={false}
         dayMaxEvents={true}
         initialDate={daySelected}
-        eventDataTransform={(event) => {
-          return event;
-        }}
+        eventDataTransform={(event) => event}
         initialEvents={initialEvents} // alternatively, use the `events` setting to fetch from a feed
         select={handleDateSelect}
         eventContent={renderEventContent}
