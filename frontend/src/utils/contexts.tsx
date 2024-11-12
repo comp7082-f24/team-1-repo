@@ -88,10 +88,10 @@ export function useTripPlanData() {
 
   function getTripPlan() {
     if (Object.keys(tripPlanContext ?? {}).length) return tripPlanContext;
-    const weatherString = sessionStorage.getItem("trip-plan");
-    if (weatherString) {
-      setTripPlanContext(JSON.parse(weatherString));
-      return JSON.parse(weatherString) ?? [];
+    const tripPlanString = sessionStorage.getItem("trip-plan");
+    if (tripPlanString) {
+      setTripPlanContext(JSON.parse(tripPlanString));
+      return JSON.parse(tripPlanString) ?? [];
     }
   }
 

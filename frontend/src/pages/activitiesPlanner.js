@@ -39,7 +39,7 @@ function ActivitiesPlanner() {
 
   const handleCalendarInitialization = useCallback((api) => {
     api?.select(dateSelected);
-    Object.keys(tripPlan).forEach((d) => {
+    Object.keys(tripPlan ?? {}).forEach((d) => {
       tripPlan[d]?.forEach((e) => api?.addEvent({ ...e, title: e.name }));
     });
 
