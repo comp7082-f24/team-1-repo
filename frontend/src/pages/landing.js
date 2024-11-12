@@ -46,102 +46,30 @@ function LandingPage() {
       return;
     }
 
-    // The +T00:00:00 is to deal with a possible of by one bug, related to javascript Date objects, and timezones.
-    const startYear = new Date(startDate + "T00:00:00").getFullYear();
-    const endYear = new Date(endDate + "T00:00:00").getFullYear();
-    const years_of_data = 5; // We'll gather data for the last 5 years
-
-    let URL = `https://geocoding-api.open-meteo.com/v1/search?name=${location}&count=1&language=en&format=json`;
-
-    fetch(URL)
+    fetch(`/getcoordinates?location=${location}`)
+    .then((response) => response.json())
+    .then((data) => {
+      const latitude = data.latitude;
+      const longitude = data.longitude;
+      setLocationData({ location, longitude, latitude });
+        
+      fetch(`/getweather`, {headers: {"Content-Type": "application/json"}, method: "POST", body: JSON.stringify({startDate: startDate, endDate: endDate, latitude: latitude, longitude: longitude})})
       .then((response) => response.json())
-      .then(async (data) => {
-        let longitude = data.results[0].longitude;
-        let latitude = data.results[0].latitude;
-        setLocationData({ location, longitude, latitude });
-
-        const fetchWeatherData = async () => {
-          const startDay = startDate.split("-")[2];
-          const endDay = endDate.split("-")[2];
-          const startMonth = startDate.split("-")[1];
-          const endMonth = endDate.split("-")[1];
-          const start = `${startMonth}-${startDay}`;
-          const end = `${endMonth}-${endDay}`;
-          const queryEndYear = new Date().getFullYear() - 1; // queryEndYear is one year less than the current year. This is to prevent querying the api for dates that don't have weather data yet, because they are in the future.
-          const queryStartYear = startYear - (endYear - queryEndYear); // queryStartYear is found by getting the diffrence between endYear and queryEndYear, and applying the same diffrence to startYear.
-
-          let promises = []; // Array to store the promises from the multiple weather api calls in the next block.
-
-          for (let i = 0; i < years_of_data; i++) {
-            const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=${latitude}&longitude=${longitude}&start_date=${
-              queryStartYear - i
-            }-${start}&end_date=${
-              queryEndYear - i
-            }-${end}&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum`;
-
-            promises[i] = fetch(URL).then((Response) => Response.json()); // This will have the resolved promise be a json object instead of a response object.
-          }
-
-          /* Promise.all accepts an iterable of promises, like an array, and will run the .then code, once all of the promises in the iterable have resolved,
-           or it will run the .catch code if any of the promises reject or if there is an error in the .then block. Using Promise.all means we can send our api
-           requests at the same time instead of sequentionally, and also don't need to worry about the order they resolve in.*/
-          Promise.all(promises)
-            .then(async (responses) => {
-              const date = new Date(startDate + "T00:00:00"); // The +T00:00:00 is to deal with a possible of by one bug, related to javascript Date objects, and timezones.
-              const averagedData = {};
-
-              // For each day of data, initialize the array entry for the given day.
-              for (let day = 0; day < responses[0].daily.time.length; day++) {
-                const dateIndex = date.toISOString()?.split("T")?.[0];
-                averagedData[dateIndex] = {
-                  date: date.toDateString(),
-                  averageTemperature: 0,
-                  averagePrecipitation: 0,
-                };
-
-                // For each year of data, add the data to the days average, while dividing it by the number of years of data, so the average will be accurate.
-                for (let year = 0; year < years_of_data; year++) {
-                  averagedData[dateIndex].averageTemperature +=
-                    responses[year].daily.temperature_2m_mean[day] /
-                    years_of_data;
-                  averagedData[dateIndex].averagePrecipitation +=
-                    responses[year].daily.precipitation_sum[day] /
-                    years_of_data;
-                }
-                date.setDate(date.getDate() + 1); // Increment the date by 1.
-              }
-              const dailyWeatherData = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&start_date=${
-                  queryStartYear + 1
-                }-${start}&end_date=${
-                  queryEndYear + 1
-                }-${end}&daily=weather_code&timezone=auto`
-              ).then((res) => res.json());
-
-              const weatherDataResult = averagedData;
-              if (
-                dailyWeatherData?.daily?.time?.length &&
-                dailyWeatherData?.daily?.weather_code?.length
-              ) {
-                dailyWeatherData?.daily?.time.forEach((d, i) => {
-                  weatherDataResult[d] = {
-                    ...(weatherDataResult?.[d] ?? {}),
-                    weatherCode: dailyWeatherData?.daily?.weather_code?.[i],
-                  };
-                });
-              }
-              setWeatherData(weatherDataResult);
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-        };
-        await fetchWeatherData();
-        navigate("/planner");
+      .then((data) => {
+        const averagedData = data.averagedData;
+            
+        fetch(`/getrealweather`, {headers: {"Content-Type": "application/json"}, method: "POST", body: JSON.stringify({startDate: startDate, endDate: endDate, latitude: latitude, longitude: longitude, averagedData: averagedData})})
+        .then((response) => response.json())
+        .then((data) => {
+          const weatherDataResult = data.weatherDataResult;
+          setWeatherData(weatherDataResult);
+          navigate("/planner");
+        })
+        .catch((error) => console.error(error))
       })
-      .catch((error) => {
-        console.error("Error fetching location data:", error);
-      });
+      .catch((error) => console.error(error))
+    })
+    .catch((error) => console.error(error))
   };
 
   const saveQuery = async () => {
