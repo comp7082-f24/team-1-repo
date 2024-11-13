@@ -110,7 +110,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
 
     // get popular query data from wikipedia
     app.get('/popularquerieswiki', async (req, res) => {
-        const wikiBaseUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/`;
+        const baseUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/`;
         const dummyData = [
             { _id: "vancouver", count: 4 },
             { _id: "bangkok", count: 2 },
@@ -134,7 +134,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
             // fetch wikipedia data for each query
             const wikiDataArray = await Promise.all(
                 queriesToUse.map(async (query) => {
-                    const wikiResponse = await fetch(wikiBaseUrl + encodeURIComponent(query._id));
+                    const wikiResponse = await fetch(baseUrl + encodeURIComponent(query._id));
                     if (!wikiResponse.ok) {
                         throw new Error("Location not found.");
                     }
@@ -150,7 +150,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
             // Use dummy data if there's an error
             const dummyWikiDataArray = await Promise.all(
                 dummyData.map(async (query) => {
-                    const wikiResponse = await fetch(wikiBaseUrl + encodeURIComponent(query._id));
+                    const wikiResponse = await fetch(baseUrl + encodeURIComponent(query._id));
                     if (!wikiResponse.ok) {
                         throw new Error("Location not found.");
                     }
@@ -164,6 +164,35 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
             mongoose.connection.close();
         }
     });
+
+    // get time
+    app.get('/get-time', async (req, res) => {
+        const { latitude, longitude } = req.query;
+        const url = `https://timeapi.io/api/time/current/coordinate?latitude=${latitude}&longitude=${longitude}`;
+
+        try {
+            const timeResponse = await fetch(url);
+            if (!timeResponse.ok) {
+                throw new Error("Couldn't fetch result");
+            }
+
+            const timeResponseData = await timeResponse.json();
+            let temp = parseInt(timeResponseData.time.substring(0, 2), 10);
+            let time;
+
+            if (temp > 12) {
+                time = (temp - 12).toString() + timeResponseData.time.substring(2) + ' p.m';
+            } else {
+                time = timeResponseData.time + ' a.m';
+            }
+
+            res.status(200).json({ time });
+        } catch (error) {
+            console.error("Error fetching time:", error);
+            res.status(500).json({ error: "Error fetching time" });
+        }
+    });
+
 
     app.get("/*", function (req, res) {
         res.sendFile(path.join(__dirname, '..', 'frontend/build', 'index.html'), function (err) {

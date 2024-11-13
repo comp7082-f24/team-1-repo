@@ -12,29 +12,23 @@ function PopupModal({ data, onClose }) {
     }, []);
 
     useEffect(() => {
-        let temp;
-        let time;
         const fetchTime = async () => {
             try {
-                const timeResponse = await fetch(`https://timeapi.io/api/time/current/coordinate?latitude=${data.coordinates.lat}&longitude=${data.coordinates.lon}`);
+                const timeResponse = await fetch(`/get-time?latitude=${data.coordinates.lat}&longitude=${data.coordinates.lon}`);
                 if (!timeResponse.ok) {
                     throw new Error("Couldn't fetch result");
                 }
+
                 const timeResponseData = await timeResponse.json();
-                temp = timeResponseData.time.substring(0,2);
-                if (temp > 12) {
-                    time = (temp - 12).toString() + timeResponseData.time.substring(2) + ' p.m';
-                } else {
-                    time = timeResponseData.time + ' a.m';
-                }
-                setTimezone(time);
+                setTimezone(timeResponseData.time);
             } catch (error) {
-                console.error(error)
+                console.error(error);
             }
-        }
+        };
 
         fetchTime();
-    }, []);
+    }, [data.coordinates]);
+
 
     const closeModal = (e) => {
         if (modalRef.current === e.target) {
