@@ -32,7 +32,7 @@ function ActivitiesPlanner() {
   const [weatherData, setWeatherData] = useWeather();
   const [calendarApi, setCalendarApi] = useState(null);
   const [dateSelected, setDateSelected] = useState(
-    weatherData["start"] ?? new Date().toISOString()
+    weatherData["start"] ?? new Date().toISOString().split("T")[0]
   );
   const [error, setError] = useState(null);
   const [, setTabSelected] = useState(0);
@@ -51,10 +51,13 @@ function ActivitiesPlanner() {
   }
 
   function handleAddEvent(event) {
-    const newEvent = { ...event, id: event.place_id, start: dateSelected };
+    const newEvent = {
+      ...event,
+      id: `${dateSelected}-${event.place_id}`,
+      start: dateSelected,
+    };
     calendarApi.addEvent({
       ...newEvent,
-      id: event.place_id,
       title: event.name,
     });
 
@@ -71,10 +74,10 @@ function ActivitiesPlanner() {
     const eventStart = event?.start?.split("T")[0];
     const ce = calendarApi.getEventById(event.id);
     setAvailableActivities((ae) => [...ae, event]);
+    console.log(tripPlan);
     setTripPlan((tp) => ({
       ...tp,
-      [eventStart]:
-        tp?.[eventStart]?.filter((ev) => ev.place_id !== event.id) ?? [],
+      [eventStart]: tp?.[eventStart]?.filter((ev) => ev.id !== event.id) ?? [],
     }));
     ce?.remove();
   }
@@ -129,6 +132,34 @@ function ActivitiesPlanner() {
                   <>
                     {locationData?.latitude && locationData?.longitude ? (
                       <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                        {error && <div>{error}</div>}
+                        {!availableActivities.length &&
+                          !error &&
+                          new Array(10).fill(null).map((item) => (
+                            <div class="border border-[#ccc] shadow rounded-md p-4 m-4 mr-6 h-[300px]">
+                              <div class="animate-pulse flex space-x-4">
+                                <div class="flex-1 space-y-6 py-4">
+                                  <div class="h-4 bg-slate-700 rounded"></div>
+                                  <div class="h-2 bg-slate-700 rounded"></div>
+                                  <div class="h-2 bg-slate-700 rounded"></div>
+                                  <div class="space-y-4">
+                                    <div class="grid grid-cols-12 gap-4">
+                                      <div class="h-2 bg-slate-700 rounded col-span-3"></div>
+                                      <div class="h-2 bg-slate-700 rounded col-span-9"></div>
+                                    </div>
+                                    <div class="grid grid-cols-12 gap-4">
+                                      <div class="h-2 bg-slate-700 rounded col-span-3"></div>
+                                      <div class="h-2 bg-slate-700 rounded col-span-9"></div>
+                                    </div>
+                                    <div class="grid grid-cols-12 gap-4">
+                                      <div class="h-2 bg-slate-700 rounded col-span-3"></div>
+                                      <div class="h-2 bg-slate-700 rounded col-span-9"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         {availableActivities?.map((event) => (
                           <li key={event.id}>
                             <EventCard
@@ -150,17 +181,21 @@ function ActivitiesPlanner() {
                 id: "activities-added",
                 name: "Activities Added",
                 content: (
-                  <ul class="flex flex-col h-[1100px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-                    {tripPlan?.[dateSelected]?.map((event) => (
-                      <li key={event.id}>
-                        <EventCard
-                          event={event}
-                          onRemoveEvent={handleRemoveEvent}
-                          isAdded={true}
-                        />
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    {tripPlan && (
+                      <ul class="flex flex-col h-[1100px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                        {tripPlan?.[dateSelected]?.map((event) => (
+                          <li key={event.id}>
+                            <EventCard
+                              event={event}
+                              onRemoveEvent={handleRemoveEvent}
+                              isAdded={true}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
                 ),
               },
             ]}
