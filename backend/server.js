@@ -193,6 +193,26 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
         }
     });
 
+    // get wiki summary
+    app.get('/wiki-summary', async (req, res) => {
+        const location = req.query.location;
+        if (!location) {
+            return res.status(400).json({ error: "Location parameter is required" });
+        }
+
+        const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${location}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error("Location not found.");
+            }
+            const data = await response.json();
+            res.status(200).json(data);
+        } catch (error) {
+            console.error("Error fetching Wikipedia data:", error);
+            res.status(500).json({ error: "Error fetching Wikipedia data" });
+        }
+    });
 
     app.get("/*", function (req, res) {
         res.sendFile(path.join(__dirname, '..', 'frontend/build', 'index.html'), function (err) {

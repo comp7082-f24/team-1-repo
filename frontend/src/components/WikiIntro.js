@@ -6,13 +6,9 @@ export default function WikiIntro() {
 
   useEffect(() => {
     if (locationData?.location) {
-      // Temporary location (this doesn't have to be a location. can be literally anything on wikipedia)
-      const URL = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-        locationData.location
-      )}`;
       const fetchLocationData = async () => {
         try {
-          const response = await fetch(URL);
+          const response = await fetch(`/wiki-summary?location=${encodeURIComponent(locationData.location)}`);
           if (!response.ok) {
             throw new Error("Location not found.");
           }
@@ -26,6 +22,7 @@ export default function WikiIntro() {
       fetchLocationData();
     }
   }, []);
+
 
   return (
     <div className="flex flex-row items-start col-span-12 space-x-4">
