@@ -123,77 +123,20 @@ function LandingPage() {
 
     const fetchPopularQueryAndWikiData = async () => {
       try {
-        // Fetch popular queries from the database
-        const queryResponse = await fetch("/popularqueries");
-        if (!queryResponse.ok) {
-          throw new Error("Couldn't fetch queries");
+        const response = await fetch("/popularquerieswiki");
+        if (!response.ok) {
+          throw new Error("Couldn't fetch popular queries and Wikipedia data");
         }
-        const popularQueryData = await queryResponse.json();
-
-        // Fetch data from Wikipedia based on popular queries
-        const wikiDataArray = await Promise.all(
-          popularQueryData.map(async (query) => {
-            const wikiResponse = await fetch(
-              `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-                query._id
-              )}`
-            );
-            if (!wikiResponse.ok) {
-              throw new Error("Location not found.");
-            }
-            const wikiData = await wikiResponse.json();
-            return { ...wikiData, count: query.count };
-          })
-        );
+        const wikiDataArray = await response.json();
         setCardInfoArray(wikiDataArray);
       } catch (error) {
         console.error(error);
-
-        // dummy data
-        const dummyData = [
-          {
-            _id: "vancouver",
-            count: 4,
-          },
-          {
-            _id: "bangkok",
-            count: 2,
-          },
-          {
-            _id: "stockholm",
-            count: 1,
-          },
-          {
-            _id: "rome",
-            count: 1,
-          },
-        ];
-
-        // Fetch Wikipedia data for dummy data
-        try {
-          const dummyWikiDataArray = await Promise.all(
-            dummyData.map(async (query) => {
-              const wikiResponse = await fetch(
-                `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-                  query._id
-                )}`
-              );
-              if (!wikiResponse.ok) {
-                throw new Error("Location not found.");
-              }
-              const wikiData = await wikiResponse.json();
-              return { ...wikiData, count: query.count };
-            })
-          );
-          setCardInfoArray(dummyWikiDataArray);
-        } catch (wikiError) {
-          console.error(wikiError);
-        }
       }
     };
 
     fetchPopularQueryAndWikiData();
   }, []);
+
 
   return (
     <div>

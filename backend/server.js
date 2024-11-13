@@ -108,6 +108,63 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
             });
     })
 
+    // get popular query data from wikipedia
+    app.get('/popularquerieswiki', async (req, res) => {
+        const wikiBaseUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/`;
+        const dummyData = [
+            { _id: "vancouver", count: 4 },
+            { _id: "bangkok", count: 2 },
+            { _id: "stockholm", count: 1 },
+            { _id: "rome", count: 1 }
+        ];
+
+        try {
+            await mongoose.connect(uri);
+
+            // fetch popular queries from the database
+            const popularQueries = await SavedQuery.aggregate([
+                { $group: { _id: { $toLower: "$searchQuery" }, count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 4 }
+            ]);
+
+            // use dummy data if no results were found in the database
+            const queriesToUse = popularQueries.length > 0 ? popularQueries : dummyData;
+
+            // fetch wikipedia data for each query
+            const wikiDataArray = await Promise.all(
+                queriesToUse.map(async (query) => {
+                    const wikiResponse = await fetch(wikiBaseUrl + encodeURIComponent(query._id));
+                    if (!wikiResponse.ok) {
+                        throw new Error("Location not found.");
+                    }
+                    const wikiData = await wikiResponse.json();
+                    return { ...wikiData, count: query.count };
+                })
+            );
+
+            res.status(200).json(wikiDataArray);
+        } catch (error) {
+            console.error('Error fetching popular queries or Wikipedia data:', error);
+
+            // Use dummy data if there's an error
+            const dummyWikiDataArray = await Promise.all(
+                dummyData.map(async (query) => {
+                    const wikiResponse = await fetch(wikiBaseUrl + encodeURIComponent(query._id));
+                    if (!wikiResponse.ok) {
+                        throw new Error("Location not found.");
+                    }
+                    const wikiData = await wikiResponse.json();
+                    return { ...wikiData, count: query.count };
+                })
+            );
+
+            res.status(200).json(dummyWikiDataArray);
+        } finally {
+            mongoose.connection.close();
+        }
+    });
+
     app.get("/*", function (req, res) {
         res.sendFile(path.join(__dirname, '..', 'frontend/build', 'index.html'), function (err) {
             if (err) {
