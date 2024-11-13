@@ -42,12 +42,12 @@ function SearchHistory({ userId }) {
             for (const query of searchHistory) {
                 const location = query.searchQuery;
                 try {
-                    const wikiResponse = await fetch(
-                        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(location)}`
-                    );
-                    if (wikiResponse.ok) {
-                        const wikiData = await wikiResponse.json();
-                        newImages[query._id] = wikiData.originalimage?.source || null;
+                    const response = await fetch(`/wiki-image?location=${location}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        newImages[query._id] = data.imageUrl || null;
+                    } else {
+                        newImages[query._id] = null;
                     }
                 } catch (error) {
                     console.error(`Error fetching image for ${location}:`, error);
@@ -56,11 +56,11 @@ function SearchHistory({ userId }) {
             }
             setImages(newImages);
         };
-
         if (searchHistory.length > 0) {
             fetchImages();
         }
     }, [searchHistory]);
+
 
     // Pagination
     const startIndex = (currentPage - 1) * itemsPerPage;
