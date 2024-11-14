@@ -429,7 +429,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
     })
 
     // Get real weather data
-    app.post('/getrealweather', (req, res) => {
+    app.post('/getrealweather', async (req, res) => {
         const startDate = req.body.startDate;
         const endDate = req.body.endDate;
         const latitude = req.body.latitude;
@@ -451,12 +451,11 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
 
 
         try {
-            const dailyWeatherData = fetch(
+            const dailyWeatherData = await fetch(
                 `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&start_date=${queryStartYear + 1
                 }-${start}&end_date=${queryEndYear + 1
                 }-${end}&daily=weather_code&timezone=auto`
             ).then((res) => res.json());
-
             const weatherDataResult = averagedData;
             if (
                 dailyWeatherData?.daily?.time?.length &&
