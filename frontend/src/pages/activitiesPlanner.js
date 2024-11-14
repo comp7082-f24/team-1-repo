@@ -10,32 +10,28 @@ import {
 } from "../utils/contexts";
 import WikiIntro from "../components/WikiIntro";
 
-const mockWeatherData = new Array(30)
-  .fill(null)
-  .map(
-    () => ["sunny", "rainy", "cloudy", "windy"]?.[Math.floor(Math.random() * 4)]
-  )
-  .reduce(
-    (acc, item, i) => ({
-      ...acc,
-      [`2024-10-${`${1 + i}`.padStart(2, "0")}`]: item,
-    }),
-    {}
-  );
-
 const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
 
 function ActivitiesPlanner() {
   const [tripPlan, setTripPlan] = useTripPlanData();
-  const [availableActivities, setAvailableActivities] = useState([]);
-  const [locationData, setLocationData] = useLocationData();
-  const [weatherData, setWeatherData] = useWeather();
+  const [availableActivities, _setAvailableActivities] = useState([]);
+  const [locationData] = useLocationData();
+  const [weatherData] = useWeather();
   const [calendarApi, setCalendarApi] = useState(null);
   const [dateSelected, setDateSelected] = useState(
     weatherData["start"] ?? new Date().toISOString().split("T")[0]
   );
   const [error, setError] = useState(null);
   const [, setTabSelected] = useState(0);
+  const setAvailableActivities = useCallback(
+    (modifier) =>
+      _setAvailableActivities((ae) =>
+        modifier(ae).sort((a, b) =>
+          a.place_id < b.place_id ? -1 : a.place_id > b.place_id ? 1 : 0
+        )
+      ),
+    [_setAvailableActivities]
+  );
 
   const handleCalendarInitialization = useCallback((api) => {
     api?.select(dateSelected);
@@ -74,7 +70,6 @@ function ActivitiesPlanner() {
     const eventStart = event?.start?.split("T")[0];
     const ce = calendarApi.getEventById(event.id);
     setAvailableActivities((ae) => [...ae, event]);
-    console.log(tripPlan);
     setTripPlan((tp) => ({
       ...tp,
       [eventStart]: tp?.[eventStart]?.filter((ev) => ev.id !== event.id) ?? [],
@@ -96,13 +91,12 @@ function ActivitiesPlanner() {
         const response = await fetch(
           `https://api.geoapify.com/v2/places?categories=entertainment,tourism&limit=10&apiKey=${GEOAPIFY_API_KEY}&filter=circle:${locationData.longitude},${locationData.latitude},10000`
         );
-
         if (!response.ok) {
           throw new Error("Error fetching activities");
         }
 
         const data = await response.json();
-        setAvailableActivities(data.features.map((f) => f.properties)); // Store activities from Geoapify response
+        setAvailableActivities(() => data.features.map((f) => f.properties));
       } catch (err) {
         console.error("Error fetching activities:", err);
         setError(err.message);
@@ -206,7 +200,7 @@ function ActivitiesPlanner() {
             initialDaySelected={dateSelected}
             onCalendarInitialized={handleCalendarInitialization}
             onDateSelected={handleDateSelected}
-            weatherData={mockWeatherData}
+            weatherData={weatherData}
           />
           <MapComponent location={locationData?.location} />
         </div>

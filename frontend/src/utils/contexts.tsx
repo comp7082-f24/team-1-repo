@@ -16,6 +16,7 @@ interface ILocationData {
 
 interface IPlaceData {
   id: string | number;
+  place_id: string | number;
   lat: number;
   lon: number;
   name: string;
