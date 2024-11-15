@@ -2,23 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import {
-  WiDaySunny,
-  WiDayRain,
-  WiCloudy,
-  WiDayWindy,
-} from "weather-icons-react";
-
-function getMockWeatherComponent(w) {
-  return weatherMap[w] ?? React.Fragment;
-}
-
-const weatherMap = {
-  sunny: WiDaySunny,
-  rainy: WiDayRain,
-  cloudy: WiCloudy,
-  windy: WiDayWindy,
-};
+import { WMO_CODE_MAP } from "../../utils/weatherCode";
 
 export default function Calendar({
   initialDaySelected = new Date(),
@@ -74,14 +58,23 @@ export default function Calendar({
         }}
         dayCellContent={(arg) => {
           const dateStr = arg.date.toJSON().split("T")?.[0];
+          const weatherCode = weatherData?.[dateStr]?.weatherCode;
           return (
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                {(() => {
-                  const Weather = getMockWeatherComponent(weatherData[dateStr]);
-                  return <Weather size={24} color="#045d8d" />;
-                })()}
-              </div>
+            <div className="flex items-center justify-between">
+              {weatherCode >= 0 && (
+                <div className="flex items-center">
+                  <img
+                    width={32}
+                    height={32}
+                    src={WMO_CODE_MAP[weatherCode]["day"]["image"]}
+                    title={WMO_CODE_MAP[weatherCode]["day"]["description"]}
+                    alt={WMO_CODE_MAP[weatherCode]["day"]["description"]}
+                  ></img>
+                  <span className="sm:text-md text-xs xl:text-md">
+                    {WMO_CODE_MAP[weatherCode]["day"]["description"]}
+                  </span>
+                </div>
+              )}
               <div>{arg.dayNumberText}</div>
             </div>
           );

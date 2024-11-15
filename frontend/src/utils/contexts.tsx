@@ -28,7 +28,11 @@ interface IPlaceData {
 }
 
 interface ITripPlanData {
-  [date: string]: IPlaceData[];
+  plan: {
+    [date: string]: IPlaceData[];
+  };
+  start: string;
+  end: string;
 }
 
 const WeatherContext = createContext<any>(null);
