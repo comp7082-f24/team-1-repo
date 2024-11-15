@@ -16,6 +16,11 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+
+
+const GEOAPIFY_API_KEY = process.env.GEOAPIFY_API_KEY;
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+
 const secretKey = process.env.JWT_SECRET_KEY;
 const uri = process.env.ATLAS_URI;
 mongoose.connect(uri, {
@@ -101,6 +106,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
                 let longitude = data.results[0].longitude;
 
                 res.status(200).json({ latitude: latitude, longitude: longitude });
+                console.log("Coordinates: ", latitude, longitude);
             })
             .catch((error) => {
                 console.error("Error fetching location data:", error);
@@ -238,6 +244,26 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
             res.status(500).json({ error: "Error fetching Wikipedia data" });
         }
     });
+
+    app.get('/getplaces', async (req, res) => {
+        try {
+            const { latitude, longitude } = req.query;
+            const url = `https://api.geoapify.com/v2/places?categories=entertainment,tourism&limit=30&apiKey=${GEOAPIFY_API_KEY}&filter=circle:${longitude},${latitude},20000`;
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error("Error fetching places");
+            } else {
+                console.log("SUCCESS");
+            }
+
+            const data = await response.json();
+            res.status(200).json(data);
+        } catch (error) {
+            console.error("Error fetching places:", error);
+            res.status(500).json({ error: "Error fetching places" , error});
+        }
+    } );
 
 
     app.get("/*", function (req, res) {

@@ -15,9 +15,6 @@ const containerStyle = {
 // Default center if no location is found
 const initialCenter = { lat: 0, lng: 0 };
 
-// Replace with your Geoapify API key
-const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
-
 // Replace with google api key
 const GOOGLE_MAPS_API_KEY = "AIzaSyDPm_CxBIZnPxC40qgoZSKB92o4nXjyYNs";
 
@@ -30,39 +27,34 @@ const MapComponent = ({ location }) => {
   // Fetch geocoding data to get coordinates from the location name
   useEffect(() => {
     if (location) {
-      const geocodeURL = `https://geocoding-api.open-meteo.com/v1/search?name=${location}&count=1&language=en&format=json`;
-      fetch(geocodeURL)
+      fetch(`/getcoordinates?location=${location}`)
         .then((response) => response.json())
         .then((data) => {
-          if (data.results && data.results.length > 0) {
-            const { latitude, longitude } = data.results[0];
-            const startPosition = { lat: latitude, lng: longitude };
-            setCoordinates(startPosition);
-            setStartPosition(startPosition); // Set the start position marker
-
-            // Fetch nearby places using Geoapify after getting coordinates
-            fetchPlaces(latitude, longitude);
+          if (data.latitude && data.longitude) {
+            const newCoordinates = { lat: data.latitude, lng: data.longitude };
+            setCoordinates(newCoordinates); // Update map center
+            setStartPosition(newCoordinates); // Set start position marker
+            fetchPlaces(data.latitude, data.longitude); // Fetch nearby activities
           }
         })
-        .catch((error) =>
-          console.error("Error fetching geocoding data:", error)
-        );
+        .catch((error) => console.error("Error fetching coordinates:", error));
     }
   }, [location]);
 
   // Function to fetch nearby activities from Geoapify
-  const fetchPlaces = (lat, lng) => {
-    const placesURL = `https://api.geoapify.com/v2/places?categories=entertainment,tourism&limit=10&apiKey=${GEOAPIFY_API_KEY}&filter=circle:${lng},${lat},10000`;
-
-    fetch(placesURL)
+  const fetchPlaces = (latitude, longitude) => {
+    fetch(`/getplaces?latitude=${latitude}&longitude=${longitude}`)
       .then((response) => response.json())
       .then((data) => {
+        console.log(data.features);
         if (data.features) {
-          setActivities(data.features); // Store activities in state
+          setActivities(data.features); // Update activities state with fetched data
         }
       })
-      .catch((error) => console.error("Error fetching activities:", error));
+      .catch((error) => console.error("Error fetching places:", error));
   };
+
+  console.log(activities);
 
   // Handle marker click event
   const handleMarkerClick = (activity) => {
@@ -83,23 +75,6 @@ const MapComponent = ({ location }) => {
             center={coordinates}
             zoom={12}
           >
-            {/* Marker for the start position */}
-            {startPosition && (
-              <Marker
-                position={startPosition}
-                title="Start Position"
-                label={{
-                  text: "Start", // Label for the start position marker
-                  color: "black",
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  backgroundColor: "white",
-                }}
-                icon={{
-                  url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png", // Custom icon for the start position
-                }}
-              />
-            )}
 
             {/* Display markers for nearby activities fetched from Geoapify */}
             {activities.map((activity, i) => (
@@ -109,18 +84,11 @@ const MapComponent = ({ location }) => {
                   lat: activity.geometry.coordinates[1], // latitude from Geoapify
                   lng: activity.geometry.coordinates[0], // longitude from Geoapify
                 }}
-                label={{
-                  text: activity.properties.name, // Display activity name
-                  color: "black", // Customize the text color
-                  fontSize: "16px", // Customize the font size
-                  fontWeight: "bold",
-                  fontFamily: "Roboto",
-                }}
                 title={activity.properties.name}
                 icon={{
-                  url: "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png", // Custom pin for nearby activities
+                  url: "http://maps.google.com/mapfiles/ms/icons/red-pushpin.png", // Custom pin for nearby activities
                 }}
-                animation={window.google.maps.Animation.BOUNCE} // Drop animation
+                animation={window.google.maps.Animation.DROP} // Drop animation
                 onClick={() => handleMarkerClick(activity)} // Handle marker click
               />
             ))}
@@ -133,12 +101,14 @@ const MapComponent = ({ location }) => {
                   lng: selectedActivity.geometry.coordinates[0],
                 }}
                 onCloseClick={handleInfoWindowClose}
+                pixelOffset={(0, 0)}
+
               >
                 <div style={{ maxWidth: "200px" }}>
-                  <h4>{selectedActivity.properties.name}</h4>
+                  <h2>{selectedActivity.properties.name}</h2>
                   <p>
                     <strong>Category:</strong>{" "}
-                    {selectedActivity.properties.category}
+                    {selectedActivity.properties.categories}
                   </p>
                   <p>
                     <strong>Distance:</strong>{" "}
