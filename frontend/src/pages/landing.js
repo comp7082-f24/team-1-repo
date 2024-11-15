@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { SearchIcon, LocationMarkerIcon } from "@heroicons/react/solid";
 import "../App.css";
-import { useLocationData, useWeather } from "../utils/contexts";
+import {
+  useTripPlanData,
+  useLocationData,
+  useWeather,
+} from "../utils/contexts";
 import DataCard from "../components/DataCard";
 import QueryCard from "../components/queryCard/queryCard";
 import PopupModal from "../components/queryCard/popupModal";
@@ -13,6 +17,7 @@ function LandingPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [, setLocationData] = useLocationData();
+  const [, setTripPlan] = useTripPlanData();
   const [weatherData, setWeatherData] = useWeather();
   const [showModal, setShowModal] = useState(false);
   const [selectedCardData, setSelectedCardData] = useState(null);
@@ -47,29 +52,49 @@ function LandingPage() {
     }
 
     fetch(`/getcoordinates?location=${location}`)
-    .then((response) => response.json())
-    .then((data) => {
-      const latitude = data.latitude;
-      const longitude = data.longitude;
-      setLocationData({ location, longitude, latitude });
-        
-      fetch(`/getweather`, {headers: {"Content-Type": "application/json"}, method: "POST", body: JSON.stringify({startDate: startDate, endDate: endDate, latitude: latitude, longitude: longitude})})
       .then((response) => response.json())
       .then((data) => {
-        const averagedData = data.averagedData;
-            
-        fetch(`/getrealweather`, {headers: {"Content-Type": "application/json"}, method: "POST", body: JSON.stringify({startDate: startDate, endDate: endDate, latitude: latitude, longitude: longitude, averagedData: averagedData})})
-        .then((response) => response.json())
-        .then((data) => {
-          const weatherDataResult = data.weatherDataResult;
-          setWeatherData(weatherDataResult);
-          navigate("/planner");
+        const latitude = data.latitude;
+        const longitude = data.longitude;
+        setLocationData({ location, longitude, latitude });
+
+        fetch(`/getweather`, {
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+          body: JSON.stringify({
+            startDate: startDate,
+            endDate: endDate,
+            latitude: latitude,
+            longitude: longitude,
+          }),
         })
-        .catch((error) => console.error(error))
+          .then((response) => response.json())
+          .then((data) => {
+            const averagedData = data.averagedData;
+
+            fetch(`/getrealweather`, {
+              headers: { "Content-Type": "application/json" },
+              method: "POST",
+              body: JSON.stringify({
+                startDate: startDate,
+                endDate: endDate,
+                latitude: latitude,
+                longitude: longitude,
+                averagedData: averagedData,
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                const weatherDataResult = data.weatherDataResult;
+                setWeatherData(weatherDataResult);
+                setTripPlan(() => ({ start: startDate, end: endDate }));
+                navigate("/planner");
+              })
+              .catch((error) => console.error(error));
+          })
+          .catch((error) => console.error(error));
       })
-      .catch((error) => console.error(error))
-    })
-    .catch((error) => console.error(error))
+      .catch((error) => console.error(error));
   };
 
   const saveQuery = async () => {
@@ -136,7 +161,6 @@ function LandingPage() {
 
     fetchPopularQueryAndWikiData();
   }, []);
-
 
   return (
     <div>

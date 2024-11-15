@@ -19,7 +19,7 @@ function ActivitiesPlanner() {
   const [weatherData] = useWeather();
   const [calendarApi, setCalendarApi] = useState(null);
   const [dateSelected, setDateSelected] = useState(
-    weatherData["start"] ?? new Date().toISOString().split("T")[0]
+    tripPlan["start"] ?? new Date().toISOString().split("T")[0]
   );
   const [error, setError] = useState(null);
   const [, setTabSelected] = useState(0);
@@ -35,9 +35,9 @@ function ActivitiesPlanner() {
 
   const handleCalendarInitialization = useCallback((api) => {
     api?.select(dateSelected);
-    Object.keys(tripPlan ?? {}).forEach((d) => {
-      tripPlan[d]?.forEach((e) => api?.addEvent({ ...e, title: e.name }));
-    });
+    for (const [, events] of Object.entries(tripPlan.plan ?? {})) {
+      events?.forEach((e) => api?.addEvent({ ...e, title: e.name }));
+    }
 
     setCalendarApi(api);
   }, []);
@@ -60,9 +60,12 @@ function ActivitiesPlanner() {
     setAvailableActivities((ae) =>
       ae?.filter((ev) => ev.place_id !== event.place_id)
     );
-    setTripPlan((plan) => ({
-      ...plan,
-      [dateSelected]: [...(plan?.[dateSelected] ?? []), newEvent],
+    setTripPlan((oldTp) => ({
+      ...oldTp,
+      plan: {
+        ...(oldTp?.plan ?? {}),
+        [dateSelected]: [...(oldTp?.plan?.[dateSelected] ?? []), newEvent],
+      },
     }));
   }
 
@@ -72,7 +75,11 @@ function ActivitiesPlanner() {
     setAvailableActivities((ae) => [...ae, event]);
     setTripPlan((tp) => ({
       ...tp,
-      [eventStart]: tp?.[eventStart]?.filter((ev) => ev.id !== event.id) ?? [],
+      plan: {
+        ...(tp.plan ?? {}),
+        [eventStart]:
+          tp?.plan?.[eventStart]?.filter((ev) => ev.id !== event.id) ?? [],
+      },
     }));
     ce?.remove();
   }
@@ -125,7 +132,7 @@ function ActivitiesPlanner() {
                 content: (
                   <>
                     {locationData?.latitude && locationData?.longitude ? (
-                      <ul class="flex flex-col h-[900px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                      <ul class="flex flex-col h-[1050px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
                         {error && <div>{error}</div>}
                         {!availableActivities.length &&
                           !error &&
@@ -178,7 +185,7 @@ function ActivitiesPlanner() {
                   <>
                     {tripPlan && (
                       <ul class="flex flex-col h-[1100px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-                        {tripPlan?.[dateSelected]?.map((event) => (
+                        {tripPlan?.plan?.[dateSelected]?.map((event) => (
                           <li key={event.id}>
                             <EventCard
                               event={event}

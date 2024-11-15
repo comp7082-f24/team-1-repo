@@ -452,9 +452,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
 
         try {
             const dailyWeatherData = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&start_date=${queryStartYear + 1
-                }-${start}&end_date=${queryEndYear + 1
-                }-${end}&daily=weather_code&timezone=auto`
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&past_days=92&forecast_days=16&daily=weather_code&timezone=auto`
             ).then((res) => res.json());
             const weatherDataResult = averagedData;
             if (
@@ -463,10 +461,10 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
             ) {
                 dailyWeatherData?.daily?.time.forEach((d, i) => {
                     if (i === 0) {
-                        weatherDataResult["start"] = d;
+                        weatherDataResult["forecast_start"] = d;
                     }
                     if (i === dailyWeatherData?.daily?.time.length - 1) {
-                        weatherDataResult["end"] = d;
+                        weatherDataResult["forecast_end"] = d;
                     }
                     weatherDataResult[d] = {
                         ...(weatherDataResult?.[d] ?? {}),

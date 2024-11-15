@@ -28,7 +28,11 @@ interface IPlaceData {
 }
 
 interface ITripPlanData {
-  [date: string]: IPlaceData[];
+  plan: {
+    [date: string]: IPlaceData[];
+  };
+  start: string;
+  end: string;
 }
 
 const WeatherContext = createContext<any>(null);
@@ -46,7 +50,11 @@ export function useWeather() {
   function getWeatherData() {
     if (Object.keys(weatherContext ?? {}).length) return weatherContext;
     const weatherString = localStorage.getItem("weather");
-    if (weatherString) {
+    if (
+      weatherString &&
+      weatherString !== "undefined" &&
+      weatherString !== "null"
+    ) {
       setWeatherContext(JSON.parse(weatherString));
       return JSON.parse(weatherString) ?? [];
     }
@@ -65,10 +73,14 @@ export function useLocationData() {
 
   function getLocationData() {
     if (Object.keys(locationContext ?? {}).length) return locationContext;
-    const weatherString = localStorage.getItem("location");
-    if (weatherString) {
-      setLocationContext(JSON.parse(weatherString));
-      return JSON.parse(weatherString) ?? [];
+    const locationString = localStorage.getItem("location");
+    if (
+      locationString &&
+      locationString !== "undefined" &&
+      locationString !== "null"
+    ) {
+      setLocationContext(JSON.parse(locationString));
+      return JSON.parse(locationString) ?? [];
     }
   }
 
@@ -90,7 +102,11 @@ export function useTripPlanData() {
   function getTripPlan() {
     if (Object.keys(tripPlanContext ?? {}).length) return tripPlanContext;
     const tripPlanString = sessionStorage.getItem("trip-plan");
-    if (tripPlanString) {
+    if (
+      tripPlanString &&
+      tripPlanString !== "undefined" &&
+      tripPlanString !== "null"
+    ) {
       setTripPlanContext(JSON.parse(tripPlanString));
       return JSON.parse(tripPlanString) ?? [];
     }

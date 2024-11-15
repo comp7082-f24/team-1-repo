@@ -1,13 +1,28 @@
 .bg {
-    background-image: url('./images/image6.jpg');
-    background-size: 100%;
-    background-position: top 40% right 50%;
-    position: absolute;
-    top:0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-    clip-path: inset(0 0 20px 0);
-    background-color: white;
+  background-image: url("./images/image6.jpg");
+  background-size: 100%;
+  background-position: top 40% right 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  clip-path: inset(0 0 20px 0);
+  background-color: white;
+}
+
+.fc-day-today {
+  background: transparent !important;
+  border: none !important;
+}
+
+.fc-daygrid-day-top {
+  width: 100% !important;
+  display: flex;
+  justify-content: space-between;
+}
+
+.fc-daygrid-day-number {
+  width: 100% !important;
 }
