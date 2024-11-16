@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import EventCard from "../components/eventCard/eventCard";
 
-// Replace with your Geoapify API key
-const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
-
 const ActivityCards = ({ latitude, longitude, onAdd, onRemove }) => {
   const [activities, setLocalActivities] = useState([]);
   const [error, setError] = useState(null);
@@ -11,14 +8,10 @@ const ActivityCards = ({ latitude, longitude, onAdd, onRemove }) => {
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const response = await fetch(
-          `https://api.geoapify.com/v2/places?categories=entertainment,tourism&limit=10&apiKey=${GEOAPIFY_API_KEY}&filter=circle:${longitude},${latitude},10000`
-        );
-
+        const response = await fetch(`/getactivities?latitude=${latitude}&longitude=${longitude}`);
         if (!response.ok) {
-          throw new Error("Error fetching activities");
+          throw new Error("Failed to fetch activities");
         }
-
         const data = await response.json();
         setLocalActivities(data.features); // Store activities from Geoapify response
       } catch (err) {
