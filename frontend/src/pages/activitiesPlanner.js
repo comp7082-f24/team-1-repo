@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import React,{ useCallback, useState, useEffect } from "react";
 import Calendar from "../components/calendar/calendar";
 import EventCard from "../components/eventCard/eventCard";
 import Tabs from "../components/Tabs/tabs";
@@ -7,12 +7,14 @@ import {
   useLocationData,
   useWeather,
   useTripPlanData,
+
 } from "../utils/contexts";
 import WikiIntro from "../components/WikiIntro";
+import axios from 'axios';
 
 const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
 
-function ActivitiesPlanner() {
+function ActivitiesPlanner({ userId, event }) {
   const [tripPlan, setTripPlan] = useTripPlanData();
   const [availableActivities, _setAvailableActivities] = useState([]);
   const [locationData] = useLocationData();
@@ -115,6 +117,21 @@ function ActivitiesPlanner() {
     }
   }, [locationData.latitude, locationData.longitude]);
 
+  const saveEventToProfile = async (event) => {
+    try {
+        const response = await axios.post('/api/events/saveEvent', {
+            userId,
+            event,
+        });
+        if (response.status === 200) {
+            alert('Event saved successfully');
+        }
+    } catch (error) {
+        console.error('Error saving event:', error);
+        alert('Error saving event');
+    }
+  };
+
   return (
     <div>
       <div className="w-[95%] m-4 mx-auto p-4 grid grid-cols-12 gap-4">
@@ -167,6 +184,7 @@ function ActivitiesPlanner() {
                               event={event}
                               onAddEvent={handleAddEvent}
                             />
+                            <button onClick={() => saveEventToProfile(event)}>Save to Profile</button>
                           </li>
                         ))}
                       </ul>

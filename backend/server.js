@@ -28,7 +28,6 @@ connection.once('open', () => {
 
 app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
 
-
 // GET ROUTES
 {
     app.get("/test", (req, res) => {

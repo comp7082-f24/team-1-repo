@@ -7,6 +7,7 @@ import { WMO_CODE_MAP } from ".././utils/weatherCode";
 function DestinationDetails() {
   const [openIndex, setOpenIndex] = useState(null);
   const [isWeatherAlertSet, setIsWeatherAlertSet] = useState(false);
+  const [openDropdownIndex, setOpenDropdownIndex] = useState(null); // Track which dropdown is open
   const weatherCodes = [0, 3, 61, 71];
 
   useEffect(() => {
@@ -19,6 +20,10 @@ function DestinationDetails() {
 
   const toggleAnswer = (index) => {
     setOpenIndex(openIndex === index ? null : index);
+  };
+
+  const toggleDropdown = (index) => {
+    setOpenDropdownIndex(openDropdownIndex === index ? null : index);
   };
 
   return (
@@ -55,7 +60,7 @@ function DestinationDetails() {
             href="javascript:void(0)"
             className="text-2xl text-[#007bff] hover:text-[#0062cc] underline"
           >
-            See Detailed Weather 
+            See Detailed Weather
           </a>
         </div>
 
@@ -87,6 +92,7 @@ function DestinationDetails() {
         <div className="flex w-full">
           {/** left: cards */}
           <div className="flex flex-col ml-4 items-center w-1/3">
+            {/** Toggle Section 1 */}
             <div className="w-full m-4 mb-0">
               <div className="rounded-lg">
                 <button
@@ -113,7 +119,7 @@ function DestinationDetails() {
                   </svg>
                 </button>
                 <div className={`${openIndex === 0 ? "block" : "hidden"} p-4`}>
-                  {/** card content */}
+                  {/** Card content */}
                   <div className="items-center border border-black rounded-md">
                     <div className="flex justify-end items-center">
                       <button className="text-xl font-bold mt-2 mr-2">✖</button>
@@ -122,6 +128,7 @@ function DestinationDetails() {
                       <img
                         className="w-full h-40 object-cover"
                         src={placeholder}
+                        alt="Placeholder"
                       />
                       <div className="p-4">
                         <div className="flex justify-between items-center">
@@ -132,7 +139,11 @@ function DestinationDetails() {
                             Rome: Priority Access Colosseum, Roman Forum &
                             Palatine Tour
                           </a>
-                          <a href="#">
+                          <a
+                            href="javascript:void(0)"
+                            className="relative"
+                            onClick={() => toggleDropdown(0)}
+                          >
                             <svg
                               className="w-5 h-5 text-blue-600"
                               xmlns="http://www.w3.org/2000/svg"
@@ -144,9 +155,50 @@ function DestinationDetails() {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth="2"
-                                d="M14 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V8l-5-3z"
+                                d="M14 5H7a2 2 0 00-2 2v10a2 2h10a2 2 0 002-2V8l-5-3z"
                               />
                             </svg>
+                            {openDropdownIndex === 0 && (
+                              <div className="absolute top-full right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                <div
+                                  className="py-1"
+                                  role="menu"
+                                  aria-orientation="vertical"
+                                  aria-labelledby="options-menu"
+                                >
+                                  <button
+                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                    role="menuitem"
+                                  >
+                                    Option 1
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                    role="menuitem"
+                                  >
+                                    Option 2
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                    role="menuitem"
+                                  >
+                                    Option 3
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                    role="menuitem"
+                                  >
+                                    Option 4
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                    role="menuitem"
+                                  >npm 
+                                    Option 5
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </a>
                         </div>
                         <p className="mt-2 text-sm text-gray-600">
@@ -172,36 +224,8 @@ function DestinationDetails() {
                 </div>
               </div>
             </div>
-            <div className="w-full m-4">
-              <div className="rounded-lg">
-                <button
-                  className="flex justify-between items-center w-full p-4 text-left hover:bg-gray-200 focus:outline-none"
-                  onClick={() => toggleAnswer(1)}
-                >
-                  <span>Monday Jan. 5th 2025</span>
-                  <svg
-                    className={`w-6 h-6 transform transition-transform duration-200 ${
-                      openIndex === 1 ? "rotate-180" : "rotate-0"
-                    }`}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 15l-3-3h6l-3 3zm0 0l3-3H9l3 3z"
-                    />
-                  </svg>
-                </button>
-                <div className={`${openIndex === 1 ? "block" : "hidden"} p-4`}>
-                  <p>content</p>
-                </div>
-              </div>
-            </div>
+
+            {/* You can replicate the above logic for other sections to use `toggleDropdown` with unique indexes */}
           </div>
 
           {/** right: map */}
@@ -214,24 +238,9 @@ function DestinationDetails() {
                 <MapComponent
                   location={{ latitude: 0, longitude: 0 }}
                   className="w-full h-full"
-                />{" "}
+                />
                 {/* Pass actual location data */}
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/** bottom: cost */}
-        <div className="flex w-full">
-          <div className="w-full p-2 ml-4 mt-4">
-            <p className="text-4xl font-bold mb-6">
-              Total Estimated Cost: $555
-            </p>
-          </div>
-          <div className="w-1/3 p-4">
-            <div className="border border-gray-300 rounded-lg shadow-md p-4 flex items-center">
-              <ExternalLinkIcon className="w-5 h-5 mr-2" />
-              <p className="text-base">Open all activities for booking</p>
             </div>
           </div>
         </div>
