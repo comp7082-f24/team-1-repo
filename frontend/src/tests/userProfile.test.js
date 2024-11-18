@@ -8,14 +8,17 @@ import SideMenu from '../components/userProfile/sideMenu';
 // globally mock fetch
 global.fetch = jest.fn(); 
 
+// mocking the user
+const mockUser = {
+    _id: '12345',
+    username: 'JohnDoe'
+};
+
 // test suites for edit profile component
 describe('Edit Profile', () => {
-
-    // mocking the user
-    const mockUser = {
-        _id: '12345',
-        username: 'JohnDoe'
-    };
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
     test('Renders component correctly', () => {
         const { getByText, getByPlaceholderText, getByRole } = render(<EditProfile userId={mockUser.userId} name={mockUser.username} />);
@@ -56,7 +59,7 @@ describe('Edit Profile', () => {
 
         // wait for success message
         await waitFor(() =>
-            expect(getByText('Username updated successfully!')).toBeInTheDocument()
+            getByText('Username updated successfully!')
         );
     });
 
@@ -76,7 +79,7 @@ describe('Edit Profile', () => {
         fireEvent.click(getByRole('button', { name: /update profile/i }));
 
         await waitFor(() =>
-            expect(getByText('Error updating username')).toBeInTheDocument()
+            getByText('Error updating username')
         );
     });
 
@@ -102,7 +105,7 @@ describe('Edit Profile', () => {
         fireEvent.click(getByRole('button', { name: /update profile/i }));
 
         await waitFor(() =>
-            expect(getByText('Password updated successfully!')).toBeInTheDocument()
+            getByText('Password updated successfully!')
         );
     });
 
@@ -119,7 +122,7 @@ describe('Edit Profile', () => {
         fireEvent.click(getByRole('button', { name: /update profile/i }));
 
         // check for error
-        expect(getByText('New password and confirmation do not match')).toBeInTheDocument();
+        getByText('New password and confirmation do not match')
     });
 
     test('Shows network error message', async () => {
@@ -135,7 +138,122 @@ describe('Edit Profile', () => {
         fireEvent.click(getByRole('button', { name: /update profile/i }));
 
         await waitFor(() =>
-            expect(getByText('Network error')).toBeInTheDocument()
+            getByText('Network error')
         );
     });
+});
+
+describe('Search History', () => {
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    test('Renders loading state initially', () => {
+        const { getByText } = render(<SearchHistory userId={mockUser._id} />);
+        getByText('Loading...');
+    });
+
+    test('Displays search history data', async () => {
+        // mock search history
+        const mockSearchHistory = [
+            {
+                _id: '1',
+                searchQuery: 'Paris',
+                startDate: '2024-11-01',
+                endDate: '2024-11-05',
+                createdAt: '2024-11-01T10:00:00Z',
+            },
+            {
+                _id: '2',
+                searchQuery: 'London',
+                startDate: '2024-11-10',
+                endDate: '2024-11-15',
+                createdAt: '2024-11-10T10:00:00Z',
+            },
+        ];
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => mockSearchHistory,
+        });
+
+        const { getByText, getByRole } = render(<SearchHistory userId={mockUser._id} />);
+
+        // wait for search history to load
+        await waitFor(() => getByText('Paris')); 
+        getByText('London');
+        // only 1 of 1 because only loading enough data for one page
+        getByText('Page 1 of 1');
+        getByRole('button', { name: 'Previous' });
+        getByRole('button', { name: 'Next' });
+    });
+
+    // mock image fetching
+    test('Fetches and displays images for each search query', async () => {
+        const mockSearchHistory = [
+            {
+                _id: '1',
+                searchQuery: 'Paris',
+                startDate: '2024-11-01',
+                endDate: '2024-11-05',
+                createdAt: '2024-11-01T10:00:00Z',
+            },
+        ];
+
+        const mockImage = { imageUrl: 'https://example.com/paris.jpg' };
+
+        fetch
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => mockSearchHistory,
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => mockImage,
+            });
+
+        const { getByAltText } = render(<SearchHistory userId={mockUser._id} />);
+
+        await waitFor(() => getByAltText('Paris'));
+    });
+
+    test('Handles error state', async () => {
+        // mock error
+        fetch.mockResolvedValueOnce({
+            ok: false,
+        });
+
+        const { getByText } = render(<SearchHistory userId={mockUser._id} />);
+
+        await waitFor(() => getByText('Error fetching search history'));
+    });
+
+    test('Handles pagination correctly', async () => {
+        // mock random locations
+        const mockSearchHistory = Array.from({ length: 15 }, (_, i) => ({
+            _id: `${i + 1}`,
+            searchQuery: `Location ${i + 1}`,
+            startDate: '2024-11-01',
+            endDate: '2024-11-05',
+            createdAt: '2024-11-01T10:00:00Z',
+        }));
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => mockSearchHistory,
+        });
+
+        const { queryByText, getByText, getByRole } = render(<SearchHistory userId={mockUser._id} />);
+
+        await waitFor(() => getByText(/location 1/i));
+        // Page 2 data not yet visible, so don't expect it to be visible
+        expect(queryByText(/location 6/i)).not.toBeInTheDocument(); 
+
+        // go to page 2
+        fireEvent.click(getByRole('button', { name: /next/i })); 
+
+        // now check for location 6 (expected to be in page 2)
+        await waitFor(() => getByText(/location 6/i));
+    });
+
 });
