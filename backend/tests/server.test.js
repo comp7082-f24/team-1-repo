@@ -411,14 +411,14 @@ describe("REST APIs PUT requests", () => {
             newUsername: "test",
         };
         const response = await request(app)
-            .post("/updateusername")
+            .put("/updateusername")
             .send(mockQuery)
             .set("Accept", "application/json");
         expect(response.status).toEqual(404);
         expect(response).toHaveProperty("error");
     });
 
-    it.skip("PUT /updateusername should return success when user is found", async () => {
+    it("PUT /updateusername should return success when user is found", async () => {
         Account.findByIdAndUpdate.mockResolvedValueOnce({
             username: "test",
         });
@@ -427,26 +427,94 @@ describe("REST APIs PUT requests", () => {
             newUsername: "test",
         };
         const response = await request(app)
-            .post("/updateusername")
+            .put("/updateusername")
             .send(mockQuery)
             .set("Accept", "application/json");
-        console.log(response);
         expect(response.status).toEqual(200);
-        expect(response).toHaveProperty("error");
+        expect(response.body).toHaveProperty("message");
+        expect(response.body.message).toEqual("Username updated successfully");
+        expect(response.body.user).toStrictEqual({
+            username: "test",
+        });
     });
 
-    it.skip("PUT /updatepassword should return success when all fields are provided", async () => {
-        Account.findByIdAndUpdate.mockResolvedValueOnce(null);
+    it("PUT /updatepassword should return error when user is not found", async () => {
+        Account.findById.mockResolvedValueOnce(null);
+        bcrypt.compare.mockImplementationOnce((a, b) => a === b);
         const mockQuery = {
             userId: 1,
-            newUsername: "test",
+            oldPassword: "oldtest",
+            newPassword: "newtest",
         };
         const response = await request(app)
-            .post("/updateusername")
+            .put("/updatepassword")
             .send(mockQuery)
             .set("Accept", "application/json");
-        console.log(response);
         expect(response.status).toEqual(404);
-        // expect(response).toHaveProperty("error");
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.error).toEqual("User not found");
+    });
+    
+    it("PUT /updatepassword should return success when user is found and fields are provided", async () => {
+        Account.findById.mockResolvedValueOnce({
+            username: "test",
+            password: "oldtest",
+            save: jest.fn()
+        });
+        bcrypt.compare.mockImplementationOnce((a, b) => a === b);
+        const mockQuery = {
+            userId: 1,
+            oldPassword: "oldtest2",
+            newPassword: "newtest",
+        };
+        const response = await request(app)
+            .put("/updatepassword")
+            .send(mockQuery)
+            .set("Accept", "application/json");
+        expect(response.status).toEqual(401);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.error).toEqual("Old password is incorrect");
+    });
+    
+    it("PUT /updatepassword should return error when old password provided is incorrect", async () => {
+        Account.findById.mockResolvedValueOnce({
+            username: "test",
+            password: "oldtest",
+            save: jest.fn()
+        });
+        bcrypt.compare.mockImplementationOnce((a, b) => a === b);
+        const mockQuery = {
+            userId: 1,
+            oldPassword: "oldtest2",
+            newPassword: "newtest",
+        };
+        const response = await request(app)
+            .put("/updatepassword")
+            .send(mockQuery)
+            .set("Accept", "application/json");
+        expect(response.status).toEqual(401);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.error).toEqual("Old password is incorrect");
+    });
+
+    it("PUT /updatepassword should return success when user is found and all fields are provided", async () => {
+        Account.findById.mockResolvedValueOnce({
+            username: "test",
+            password: "oldtest",
+            save: jest.fn()
+        });
+        bcrypt.compare.mockImplementationOnce((a, b) => a === b);
+        const mockQuery = {
+            userId: 1,
+            oldPassword: "oldtest",
+            newPassword: "newtest",
+        };
+        const response = await request(app)
+            .put("/updatepassword")
+            .send(mockQuery)
+            .set("Accept", "application/json");
+        expect(response.status).toEqual(200);
+        expect(response.body).toHaveProperty("message");
+        expect(response.body.message).toEqual("Password updated successfully");
     });
 });
