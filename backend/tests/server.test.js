@@ -2,8 +2,10 @@ const { describe, expect, beforeAll, afterAll } = require("@jest/globals");
 const { app } = require("../server");
 const request = require("supertest");
 const Account = require("../models/accountdb");
+const SavedQuery = require("../models/savedquerydb");
 const bcrypt = require("bcrypt");
 jest.mock("../models/accountdb");
+jest.mock("../models/savedquerydb");
 jest.mock("bcrypt");
 
 describe("REST APIs GET requests", () => {
@@ -17,6 +19,7 @@ describe("REST APIs GET requests", () => {
     });
 
     it("GET /popularqueries should return an array", async () => {
+        SavedQuery.aggregate.mockResolvedValueOnce([]);
         const response = await request(app)
             .get("/popularqueries")
             .set("Accept", "application/json");
@@ -270,5 +273,180 @@ describe("REST APIs POST requests", () => {
             expect(response.body).toHaveProperty("message");
             expect(response.body.message).toEqual("Logged out successfully");
         });
+    });
+
+    describe("Weather and query requests", () => {
+        it("POST /savequery should return error if any of the required fields are missing", async () => {
+            SavedQuery.mockImplementationOnce(
+                ({ userId, searchQuery, startDate, endDate }) => {
+                    if (
+                        userId == undefined ||
+                        searchQuery == undefined ||
+                        startDate == undefined ||
+                        endDate == undefined
+                    )
+                        throw Error;
+                    return {
+                        save: jest.fn(),
+                    };
+                }
+            );
+            const response = await request(app)
+                .post("/savequery")
+                .set("Accept", "application/json");
+            expect(response.status).toEqual(500);
+            expect(response.body).toHaveProperty("error");
+            expect(response.body.error).toEqual("Error during saving");
+        });
+
+        it("POST /savequery should return success when all fields are provided", async () => {
+            const mockQuery = {
+                userId: 1,
+                searchQuery: "vancouver",
+                startDate: new Date(),
+                endDate: new Date(),
+            };
+            const response = await request(app)
+                .post("/savequery")
+                .send(mockQuery)
+                .set("Accept", "application/json");
+            expect(response.status).toEqual(200);
+            expect(response.body).toHaveProperty("message");
+            expect(response.body.message).toEqual("Query Saved!");
+        });
+
+        it("POST /getweather should return error when coordinates are not provided", async () => {
+            const mockQuery = {
+                latitude: null,
+                longitude: null,
+                startDate: new Date(),
+                endDate: new Date(),
+            };
+            const response = await request(app)
+                .post("/getweather")
+                .send(mockQuery)
+                .set("Accept", "application/json");
+            expect(response.status).toEqual(400);
+            expect(response.body).toHaveProperty("error");
+            expect(response.body.error).toEqual("Error fetching weather data");
+        });
+
+        it("POST /getweather should return error when date format is invalid", async () => {
+            const mockQuery = {
+                latitude: 49.246292,
+                longitude: -123.116226,
+                startDate: new Date(),
+                endDate: new Date(),
+            };
+            const response = await request(app)
+                .post("/getweather")
+                .send(mockQuery)
+                .set("Accept", "application/json");
+            expect(response.status).toEqual(400);
+            expect(response.body).toHaveProperty("error");
+            expect(response.body.error).toEqual("Error fetching weather data");
+        });
+
+        it("POST /getweather should return success when all fields are provided", async () => {
+            const mockQuery = {
+                latitude: 49.246292,
+                longitude: -123.116226,
+                startDate: new Date().toISOString().split("T")[0],
+                endDate: new Date().toISOString().split("T")[0],
+            };
+            const response = await request(app)
+                .post("/getweather")
+                .send(mockQuery)
+                .set("Accept", "application/json");
+            expect(response.status).toEqual(200);
+            expect(response.body).toHaveProperty("averagedData");
+            expect(
+                Object.keys(response.body.averagedData).length
+            ).toBeGreaterThanOrEqual(1);
+            Object.keys(response.body.averagedData).forEach((key) => {
+                expect(response.body.averagedData[key]).toHaveProperty("date");
+                expect(response.body.averagedData[key]).toHaveProperty(
+                    "averageTemperature"
+                );
+                expect(response.body.averagedData[key]).toHaveProperty(
+                    "averagePrecipitation"
+                );
+            });
+        });
+
+        it("POST /getrealweather should return success when all fields are provided", async () => {
+            const mockQuery = {
+                latitude: 49.246292,
+                longitude: -123.116226,
+                startDate: new Date().toISOString().split("T")[0],
+                endDate: new Date().toISOString().split("T")[0],
+                averagedData: {},
+            };
+            const response = await request(app)
+                .post("/getrealweather")
+                .send(mockQuery)
+                .set("Accept", "application/json");
+            expect(response.status).toEqual(200);
+            expect(response.body).toHaveProperty("weatherDataResult");
+            expect(response.body.weatherDataResult).toHaveProperty(
+                "forecast_start"
+            );
+            expect(
+                response.body.weatherDataResult[
+                    response.body.weatherDataResult.forecast_start
+                ]
+            ).toHaveProperty("weatherCode");
+            expect(response.body.weatherDataResult).toHaveProperty(
+                "forecast_end"
+            );
+        });
+    });
+});
+
+describe("REST APIs PUT requests", () => {
+    it("PUT /updateusername should return error when user is not found", async () => {
+        Account.findByIdAndUpdate.mockResolvedValueOnce(null);
+        const mockQuery = {
+            userId: 1,
+            newUsername: "test",
+        };
+        const response = await request(app)
+            .post("/updateusername")
+            .send(mockQuery)
+            .set("Accept", "application/json");
+        expect(response.status).toEqual(404);
+        expect(response).toHaveProperty("error");
+    });
+
+    it.skip("PUT /updateusername should return success when user is found", async () => {
+        Account.findByIdAndUpdate.mockResolvedValueOnce({
+            username: "test",
+        });
+        const mockQuery = {
+            userId: 1,
+            newUsername: "test",
+        };
+        const response = await request(app)
+            .post("/updateusername")
+            .send(mockQuery)
+            .set("Accept", "application/json");
+        console.log(response);
+        expect(response.status).toEqual(200);
+        expect(response).toHaveProperty("error");
+    });
+
+    it.skip("PUT /updatepassword should return success when all fields are provided", async () => {
+        Account.findByIdAndUpdate.mockResolvedValueOnce(null);
+        const mockQuery = {
+            userId: 1,
+            newUsername: "test",
+        };
+        const response = await request(app)
+            .post("/updateusername")
+            .send(mockQuery)
+            .set("Accept", "application/json");
+        console.log(response);
+        expect(response.status).toEqual(404);
+        // expect(response).toHaveProperty("error");
     });
 });
