@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import UserProfile from '../pages/userProfile';
 import EditProfile from '../components/userProfile/editProfile';
 import SearchHistory from '../components/userProfile/searchHistory';
@@ -19,6 +19,10 @@ describe('UserProfile page', () => {
         fetch.mockClear();
     });
 
+    afterEach(() => {
+        cleanup();
+    });
+    
     test('Redirects to /signin if not authenticated', async () => {
         fetch.mockResolvedValueOnce({
             ok: true,
@@ -57,6 +61,10 @@ describe('UserProfile page', () => {
 describe('Edit Profile', () => {
     afterEach(() => {
         jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+        cleanup();
     });
 
     test('Renders component correctly', () => {
@@ -185,6 +193,10 @@ describe('Edit Profile', () => {
 describe('Search History', () => {
     afterEach(() => {
         jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+        cleanup();
     });
 
     test('Renders loading state initially', () => {
