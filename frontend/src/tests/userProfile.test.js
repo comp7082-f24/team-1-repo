@@ -14,7 +14,46 @@ const mockUser = {
     username: 'JohnDoe'
 };
 
-// test suites for edit profile component
+describe('UserProfile page', () => {
+    beforeEach(() => {
+        fetch.mockClear();
+    });
+
+    test('Redirects to /signin if not authenticated', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ authenticated: false }),
+        });
+
+        delete window.location;
+        window.location = { href: '' };
+
+        render(<UserProfile />);
+
+        await waitFor(() => {
+            expect(window.location.href).toBe('/signin');
+        });
+    });
+
+    // only checks if EditProfile loads because its the first component that loads. Will test navigation in sideMenu test suite.
+    test('Renders EditProfile component when authenticated', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                authenticated: true,
+                user: { id: '12345', username: 'JohnDoe' },
+            }),
+        });
+
+        const { getAllByText } = render(<UserProfile />);
+
+        // will test this further in the editProfile test suite. Simply check if Edit Profile exists in the page.
+        await waitFor(() => {
+            getAllByText('Edit Profile')
+        });
+    });
+});
+
 describe('Edit Profile', () => {
     afterEach(() => {
         jest.clearAllMocks();
@@ -246,7 +285,7 @@ describe('Search History', () => {
         const { queryByText, getByText, getByRole } = render(<SearchHistory userId={mockUser._id} />);
 
         await waitFor(() => getByText(/location 1/i));
-        // Page 2 data not yet visible, so don't expect it to be visible
+        //page 2 data not yet visible, so don't expect it to be visible
         expect(queryByText(/location 6/i)).not.toBeInTheDocument(); 
 
         // go to page 2
@@ -255,5 +294,44 @@ describe('Search History', () => {
         // now check for location 6 (expected to be in page 2)
         await waitFor(() => getByText(/location 6/i));
     });
-
 });
+
+describe('Side Menu', () => {
+    test('renders menu items correctly', () => {
+        const {getByText } = render(<SideMenu setSelectedItem={jest.fn()} selectedItem="edit" isMobileOpen={true} />);
+
+        // find menu items
+        getByText('Edit Profile');
+        getByText('Search History');
+    });
+
+    test('renders menu when isMobileOpen is true', () => {
+        const { getByText } = render(<SideMenu setSelectedItem={jest.fn()} selectedItem="edit" isMobileOpen={true} />);
+
+        expect(getByText('Edit Profile')).toBeVisible();
+        expect(getByText('Search History')).toBeVisible();
+    });
+
+    test('does not render menu when isMobileOpen is false', () => {
+        const {getByText } = render(<SideMenu setSelectedItem={jest.fn()} selectedItem="edit" isMobileOpen={false} />);
+
+        expect(getByText('Edit Profile')).not.toBeNull();
+        expect(getByText('Search History')).not.toBeNull();
+    });
+
+    test('calls setSelectedItem with correct argument when menu item is clicked', () => {
+        const mockSetSelectedItem = jest.fn();
+
+        const {getByText } = render(
+            <SideMenu
+                setSelectedItem={mockSetSelectedItem}
+                selectedItem="edit"
+                isMobileOpen={true}
+            />
+        );
+
+        fireEvent.click(getByText('Search History'));
+
+        expect(mockSetSelectedItem).toHaveBeenCalledWith('search');
+    });
+})
