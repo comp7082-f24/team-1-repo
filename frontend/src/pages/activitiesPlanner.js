@@ -1,4 +1,4 @@
-import React,{ useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import Calendar from "../components/calendar/calendar";
 import EventCard from "../components/eventCard/eventCard";
 import Tabs from "../components/Tabs/tabs";
@@ -7,15 +7,16 @@ import {
   useLocationData,
   useWeather,
   useTripPlanData,
-
 } from "../utils/contexts";
 import WikiIntro from "../components/WikiIntro";
-import axios from 'axios';
+import axios from "axios";
 
 const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
 
-function ActivitiesPlanner({ userId, event }) {
+function ActivitiesPlanner() {
   const [tripPlan, setTripPlan] = useTripPlanData();
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [availableActivities, _setAvailableActivities] = useState([]);
   const [locationData] = useLocationData();
   const [weatherData] = useWeather();
@@ -25,6 +26,7 @@ function ActivitiesPlanner({ userId, event }) {
   );
   const [error, setError] = useState(null);
   const [, setTabSelected] = useState(0);
+
   const setAvailableActivities = useCallback(
     (modifier) =>
       _setAvailableActivities((ae) =>
@@ -40,7 +42,6 @@ function ActivitiesPlanner({ userId, event }) {
     for (const [, events] of Object.entries(tripPlan.plan ?? {})) {
       events?.forEach((e) => api?.addEvent({ ...e, title: e.name }));
     }
-
     setCalendarApi(api);
   }, []);
 
@@ -103,7 +104,6 @@ function ActivitiesPlanner({ userId, event }) {
         if (!response.ok) {
           throw new Error("Error fetching activities");
         }
-
         const data = await response.json();
         setAvailableActivities(() => data.features.map((f) => f.properties));
       } catch (err) {
@@ -117,18 +117,59 @@ function ActivitiesPlanner({ userId, event }) {
     }
   }, [locationData.latitude, locationData.longitude]);
 
-  const saveEventToProfile = async (event) => {
-    try {
-        const response = await axios.post('/api/events/saveEvent', {
-            userId,
-            event,
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch("/isauth", {
+          method: "POST",
+          credentials: "include",
         });
-        if (response.status === 200) {
-            alert('Event saved successfully');
+        const data = await response.json();
+        setIsAuthenticated(data.authenticated);
+        if (data.authenticated) {
+          setUser(data.user);
+        } else {
+          window.location.href = "/signin";
         }
+      } catch (error) {
+        console.error("Error checking auth status:", error);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  const saveTrip = async (events) => {
+    if (!events.length) {
+      alert("No events to save for the selected date.");
+      return;
+    }
+
+    try {
+      // Create a payload with detailed weather and location information
+      const payload = events.map((event) => ({
+        title: event.name,
+        date: dateSelected,
+        description: event.description ?? "No description available",
+        location: { address: event.formatted, city: event.city },
+        weather: {
+          temperature: weatherData?.temperature ?? "Unknown",
+          condition: weatherData?.condition ?? "Unknown",
+        },
+      }));
+
+      const response = await axios.post("/saveevent", {
+        userId: user.id,
+        events: payload,
+      });
+
+      if (response.status === 200) {
+        alert("Trip saved successfully!");
+        console.log("Trip saved successfully!");
+      }
     } catch (error) {
-        console.error('Error saving event:', error);
-        alert('Error saving event');
+      console.error("Error saving trip:", error);
+      alert("Error saving trip. Please try again.");
     }
   };
 
@@ -137,8 +178,8 @@ function ActivitiesPlanner({ userId, event }) {
       <div className="w-[95%] m-4 mx-auto p-4 grid grid-cols-12 gap-4">
         <WikiIntro />
       </div>
-      <div class="w-[95%] m-4 mx-auto p-4 border-2 rounded-md grid grid-cols-12 gap-4 h-[1200px]">
-        <div class="flex flex-col h-[1100px] box-border align-center col-span-4 border-2 p-2 rounded-md overflow-hidden">
+      <div className="w-[95%] m-4 mx-auto p-4 border-2 rounded-md grid grid-cols-12 gap-4 h-[1200px]">
+        <div className="flex flex-col h-[1100px] box-border align-center col-span-4 border-2 p-2 rounded-md overflow-hidden">
           <Tabs
             onTabChange={handleTabChange}
             defaultActiveId={"activities-available"}
@@ -149,31 +190,19 @@ function ActivitiesPlanner({ userId, event }) {
                 content: (
                   <>
                     {locationData?.latitude && locationData?.longitude ? (
-                      <ul class="flex flex-col h-[1050px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                      <ul className="flex flex-col h-[1050px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
                         {error && <div>{error}</div>}
                         {!availableActivities.length &&
                           !error &&
-                          new Array(10).fill(null).map((item) => (
-                            <div class="border border-[#ccc] shadow rounded-md p-4 m-4 mr-6 h-[300px]">
-                              <div class="animate-pulse flex space-x-4">
-                                <div class="flex-1 space-y-6 py-4">
-                                  <div class="h-4 bg-slate-700 rounded"></div>
-                                  <div class="h-2 bg-slate-700 rounded"></div>
-                                  <div class="h-2 bg-slate-700 rounded"></div>
-                                  <div class="space-y-4">
-                                    <div class="grid grid-cols-12 gap-4">
-                                      <div class="h-2 bg-slate-700 rounded col-span-3"></div>
-                                      <div class="h-2 bg-slate-700 rounded col-span-9"></div>
-                                    </div>
-                                    <div class="grid grid-cols-12 gap-4">
-                                      <div class="h-2 bg-slate-700 rounded col-span-3"></div>
-                                      <div class="h-2 bg-slate-700 rounded col-span-9"></div>
-                                    </div>
-                                    <div class="grid grid-cols-12 gap-4">
-                                      <div class="h-2 bg-slate-700 rounded col-span-3"></div>
-                                      <div class="h-2 bg-slate-700 rounded col-span-9"></div>
-                                    </div>
-                                  </div>
+                          new Array(10).fill(null).map((item, index) => (
+                            <div
+                              key={index}
+                              className="border border-[#ccc] shadow rounded-md p-4 m-4 mr-6 h-[300px]"
+                            >
+                              <div className="animate-pulse flex space-x-4">
+                                <div className="flex-1 space-y-6 py-4">
+                                  <div className="h-4 bg-slate-700 rounded"></div>
+                                  <div className="h-2 bg-slate-700 rounded"></div>
                                 </div>
                               </div>
                             </div>
@@ -184,7 +213,6 @@ function ActivitiesPlanner({ userId, event }) {
                               event={event}
                               onAddEvent={handleAddEvent}
                             />
-                            <button onClick={() => saveEventToProfile(event)}>Save to Profile</button>
                           </li>
                         ))}
                       </ul>
@@ -202,17 +230,27 @@ function ActivitiesPlanner({ userId, event }) {
                 content: (
                   <>
                     {tripPlan && (
-                      <ul class="flex flex-col h-[1100px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
-                        {tripPlan?.plan?.[dateSelected]?.map((event) => (
-                          <li key={event.id}>
-                            <EventCard
-                              event={event}
-                              onRemoveEvent={handleRemoveEvent}
-                              isAdded={true}
-                            />
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="relative h-full">
+                        <ul className="flex flex-col h-[1050px] space-y-4 overflow-y-scroll pl-2 pr-4 pb-[100px] box-border">
+                          {tripPlan?.plan?.[dateSelected]?.map((event) => (
+                            <li key={event.id}>
+                              <EventCard
+                                event={event}
+                                onRemoveEvent={handleRemoveEvent}
+                                isAdded={true}
+                              />
+                            </li>
+                          ))}
+                        </ul>
+                        <button
+                          className="absolute bottom-4 right-4 bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700"
+                          onClick={() =>
+                            saveTrip(tripPlan.plan[dateSelected] ?? [])
+                          }
+                        >
+                          Save Trip
+                        </button>
+                      </div>
                     )}
                   </>
                 ),
@@ -220,7 +258,7 @@ function ActivitiesPlanner({ userId, event }) {
             ]}
           />
         </div>
-        <div class="col-span-8">
+        <div className="col-span-8">
           <Calendar
             initialDaySelected={dateSelected}
             onCalendarInitialized={handleCalendarInitialization}

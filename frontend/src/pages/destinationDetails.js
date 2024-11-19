@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { BellIcon, ExternalLinkIcon } from "@heroicons/react/solid";
+import axios from 'axios';
+import { BellIcon } from "@heroicons/react/solid";
 import placeholder from "../images/placeholder.png";
 import MapComponent from "../components/MapComponent"; // Import the MapComponent
-import { WMO_CODE_MAP } from ".././utils/weatherCode";
+import { WMO_CODE_MAP } from "../utils/weatherCode";
 
 function DestinationDetails() {
+  const [events, setEvents] = useState([]);
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
   const [isWeatherAlertSet, setIsWeatherAlertSet] = useState(false);
   const [openDropdownIndex, setOpenDropdownIndex] = useState(null); // Track which dropdown is open
@@ -13,6 +17,41 @@ function DestinationDetails() {
   useEffect(() => {
     document.title = "Destination Details";
   }, []);
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch("/isauth", {
+          method: "POST",
+          credentials: "include",
+        });
+        const data = await response.json();
+        setIsAuthenticated(data.authenticated);
+        if (data.authenticated) {
+          setUser(data.user);
+        } else {
+          window.location.href = "/signin";
+        }
+      } catch (error) {
+        console.error("Error checking auth status:", error);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get(`/events/${user.id}`);
+        setEvents(response.data.events);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    };
+
+    fetchEvents();
+  }, [user]);
 
   const handleWeatherAlertClick = () => {
     setIsWeatherAlertSet((prevState) => !prevState); // Toggle the state
@@ -32,7 +71,7 @@ function DestinationDetails() {
       <p className="text-4xl font-bold mb-6">Trip Summary</p>
       <div className="flex items-center w-full justify-between space-x-4">
         {/* Weather summary section */}
-        <div className="flex items-center justify-evenly w-1/4 border border-black">
+        <div className="flex items-center justify-evenly w-1/4  ">
           {weatherCodes.map((code, index) => {
             const weather = WMO_CODE_MAP[code]?.day; // Get day weather info
             return (
@@ -50,22 +89,22 @@ function DestinationDetails() {
         </div>
 
         {/* Activities planned */}
-        <div className="flex items-center justify-center w-1/4 border border-black">
-          <p className="text-2xl">? activities planned</p>
+        <div className="flex items-center justify-center w-1/4 ">
+          <p className="text-2xl">{events?.length || 0} activities planned</p>
         </div>
 
-        {/* See detailed weather data */}
-        <div className="flex items-center justify-center w-1/4 border border-black">
+        {/* See detailed weather data 
+        <div className="flex items-center justify-center w-1/4 ">
           <a
             href="javascript:void(0)"
             className="text-2xl text-[#007bff] hover:text-[#0062cc] underline"
           >
             See Detailed Weather
           </a>
-        </div>
+        </div>*/}
 
         {/* Weather alert button with bell */}
-        <div className="flex items-center justify-center w-1/4 border border-black">
+        <div className="flex items-center justify-center w-1/4 ">
           <button
             className={`p-2 rounded flex items-center justify-center space-x-2 ${
               isWeatherAlertSet
@@ -92,140 +131,69 @@ function DestinationDetails() {
         <div className="flex w-full">
           {/** left: cards */}
           <div className="flex flex-col ml-4 items-center w-1/3">
-            {/** Toggle Section 1 */}
-            <div className="w-full m-4 mb-0">
-              <div className="rounded-lg">
-                <button
-                  className="flex justify-between items-center w-full p-4 text-left hover:bg-gray-200 focus:outline-none"
-                  onClick={() => toggleAnswer(0)}
-                >
-                  <span>Monday Jan. 5th 2025</span>
-                  <svg
-                    className={`w-6 h-6 transform transition-transform duration-200 ${
-                      openIndex === 0 ? "rotate-180" : "rotate-0"
-                    }`}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
+            {events.map((event, index) => (
+              <div key={index} className="w-full m-4 mb-0">
+                <div className="rounded-lg">
+                  <button
+                    className="flex justify-between items-center w-full p-4 text-left hover:bg-gray-200 focus:outline-none"
+                    onClick={() => toggleAnswer(index)}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 15l-3-3h6l-3 3zm0 0l3-3H9l3 3z"
-                    />
-                  </svg>
-                </button>
-                <div className={`${openIndex === 0 ? "block" : "hidden"} p-4`}>
-                  {/** Card content */}
-                  <div className="items-center border border-black rounded-md">
-                    <div className="flex justify-end items-center">
-                      <button className="text-xl font-bold mt-2 mr-2">✖</button>
-                    </div>
-                    <div className="mt-4 bg-white rounded-lg shadow-md overflow-hidden">
-                      <img
-                        className="w-full h-40 object-cover"
-                        src={placeholder}
-                        alt="Placeholder"
+                    <span>{event.date || "No date available"}</span>
+                    <svg
+                      className={`w-6 h-6 transform transition-transform duration-200 ${
+                        openIndex === index ? "rotate-180" : "rotate-0"
+                      }`}
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 15l-3-3h6l-3 3zm0 0l3-3H9l3 3z"
                       />
-                      <div className="p-4">
-                        <div className="flex justify-between items-center">
-                          <a
-                            href="#"
-                            className="text-blue-600 hover:underline font-semibold"
-                          >
-                            Rome: Priority Access Colosseum, Roman Forum &
-                            Palatine Tour
-                          </a>
-                          <a
-                            href="javascript:void(0)"
-                            className="relative"
-                            onClick={() => toggleDropdown(0)}
-                          >
-                            <svg
-                              className="w-5 h-5 text-blue-600"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M14 5H7a2 2 0 00-2 2v10a2 2h10a2 2 0 002-2V8l-5-3z"
-                              />
-                            </svg>
-                            {openDropdownIndex === 0 && (
-                              <div className="absolute top-full right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-                                <div
-                                  className="py-1"
-                                  role="menu"
-                                  aria-orientation="vertical"
-                                  aria-labelledby="options-menu"
-                                >
-                                  <button
-                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                    role="menuitem"
-                                  >
-                                    Option 1
-                                  </button>
-                                  <button
-                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                    role="menuitem"
-                                  >
-                                    Option 2
-                                  </button>
-                                  <button
-                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                    role="menuitem"
-                                  >
-                                    Option 3
-                                  </button>
-                                  <button
-                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                    role="menuitem"
-                                  >
-                                    Option 4
-                                  </button>
-                                  <button
-                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                    role="menuitem"
-                                  >npm 
-                                    Option 5
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </a>
-                        </div>
-                        <p className="mt-2 text-sm text-gray-600">
-                          5 hours • Skip the line • Small group
-                        </p>
-                        <div className="flex justify-between items-center mt-2">
-                          <div>
-                            <p className="text-sm">8:30 AM ~ 12:30 PM</p>
-                          </div>
-                          <p className="text-sm font-semibold">Jan. 5th 2025</p>
-                        </div>
+                    </svg>
+                  </button>
+                  <div className={`${openIndex === index ? "block" : "hidden"} p-4`}>
+                    {/** Card content */}
+                    <div className="items-center border border-black rounded-md">
+                      <div className="flex justify-end items-center">
+                        <button className="text-xl font-bold mt-2 mr-2">✖</button>
                       </div>
-                      <div className="flex items-center p-4 border-t border-gray-200">
+                      <div className="mt-4 bg-white rounded-lg shadow-md overflow-hidden">
                         <img
-                          src={WMO_CODE_MAP[0]?.day?.image || ""}
-                          alt={WMO_CODE_MAP[0]?.day?.description || "Sunny"}
-                          title={WMO_CODE_MAP[0]?.day?.description || "Sunny"}
-                          className="w-6 h-6"
+                          className="w-full h-40 object-cover"
+                          src={event.image || placeholder}
+                          alt={event.title || "Event Image"}
                         />
+                        <div className="p-4">
+                          <div className="flex justify-between items-center">
+                            <a
+                              href="#"
+                              className="text-blue-600 hover:underline font-semibold"
+                            >
+                              {event.title || "Untitled Event"}
+                            </a>
+                          </div>
+                          <p className="mt-2 text-sm text-gray-600">
+                            {event.description || "No description available"}
+                          </p>
+                          <div className="flex justify-between items-center mt-2">
+                            <div>
+                              <p className="text-sm">{event.time || "No time specified"}</p>
+                            </div>
+                            <p className="text-sm font-semibold">{event.date || "No date"}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* You can replicate the above logic for other sections to use `toggleDropdown` with unique indexes */}
+            ))}
           </div>
 
           {/** right: map */}

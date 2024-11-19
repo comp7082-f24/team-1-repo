@@ -238,6 +238,26 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
         }
     });
 
+    // Get user events by user ID
+    app.get('/events/:userId', async (req, res) => {
+        const userId = req.params.userId;
+
+        try {
+            await mongoose.connect(uri);
+
+            const user = await Account.findById(userId);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            res.status(200).json({ events: user.events });
+        } catch (err) {
+            console.error('Error fetching user events:', err);
+            res.status(500).json({ error: 'Error fetching user events' });
+        } finally {
+            mongoose.connection.close();
+        }
+    });
 
     app.get("/*", function (req, res) {
         res.sendFile(path.join(__dirname, '..', 'frontend/build', 'index.html'), function (err) {
@@ -478,6 +498,69 @@ app.use(express.static(path.join(__dirname, '..', 'frontend/build')));
         }
 
     })
+    // Save event endpoint
+app.post("/saveevent", async (req, res) => {
+    const { userId, events } = req.body;
+    console.log(req.body);
+    // Validate the payload
+    if (!userId || !Array.isArray(events) || events.length === 0) {
+      return res.status(400).json({ error: "Invalid payload" });
+    }
+  
+    try {
+      await mongoose.connect(uri);
+  
+      // Find the user by ID
+      const user = await Account.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+  
+      // Add the events to the user's event list
+      user.events.push(...events);
+      await user.save();
+      console.log("Trip saved successfully!");
+
+      res.status(201).json({ message: "Event saved successfully" });
+    } catch (err) {
+      console.error("Error saving event:", err);
+      res.status(500).json({ error: "Error saving event" });
+      
+    } finally {
+      mongoose.connection.close();
+    }
+  });
+  
+  // Remove event endpoint
+  app.post("/removeEvent", async (req, res) => {
+    const { userId, eventId } = req.body;
+  
+    // Validate the payload
+    if (!userId || !eventId) {
+      return res.status(400).json({ error: "Invalid payload" });
+    }
+  
+    try {
+      await mongoose.connect(uri);
+  
+      // Find the user by ID
+      const user = await Account.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+  
+      // Remove the event with the specified ID
+      user.events = user.events.filter((event) => event.id !== eventId);
+      await user.save();
+  
+      res.status(200).json({ message: "Event removed successfully" });
+    } catch (err) {
+      console.error("Error removing event:", err);
+      res.status(500).json({ error: "Error removing event" });
+    } finally {
+      mongoose.connection.close();
+    }
+  });
 }
 
 app.listen(port, () => {
