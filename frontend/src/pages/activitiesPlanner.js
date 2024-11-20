@@ -10,6 +10,8 @@ import {
 } from "../utils/contexts";
 import WikiIntro from "../components/WikiIntro";
 import axios from "axios";
+import { WMO_CODE_MAP } from "../utils/weatherCode";
+
 
 const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
 
@@ -147,16 +149,25 @@ function ActivitiesPlanner() {
 
     try {
       // Create a payload with detailed weather and location information
-      const payload = events.map((event) => ({
-        title: event.name,
-        date: dateSelected,
-        description: event.description ?? "No description available",
-        location: { address: event.formatted, city: event.city },
-        weather: {
-          temperature: weatherData?.temperature ?? "Unknown",
-          condition: weatherData?.condition ?? "Unknown",
-        },
-      }));
+      const payload = events.map((event) => {
+        const dateStr = dateSelected;
+        const weatherCode = weatherData?.[dateStr]?.weatherCode;
+        const weatherDescription =
+          weatherCode !== undefined
+            ? WMO_CODE_MAP[weatherCode]?.day?.description ?? "Unknown"
+            : "Unknown";
+        return {
+          title: event.name,
+          date: dateSelected,
+          description: event.description ?? "No description available",
+          location: { address: event.formatted, city: event.city },
+          weather: {
+            temperature: weatherData?.[dateStr]?.temperature ?? "Unknown",
+            condition: weatherDescription,
+            name: weatherDescription, // Adding the weather name (e.g., sunny, cloudy, etc.)
+          },
+        };
+      });
 
       const response = await axios.post("/saveevent", {
         userId: user.id,
