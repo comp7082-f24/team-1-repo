@@ -5,6 +5,12 @@ import SignUp from '../pages/signup';
 
 global.fetch = jest.fn(); 
 
+// Mock user data
+const mockUser = {
+    email: 'test@test.com',
+    password: 'correctpassword',
+};
+
 describe('Sign in testing', () => {
     beforeEach(() => {
         fetch.mockClear();
@@ -59,21 +65,62 @@ describe('Sign in testing', () => {
         });
     });
 
+    test('Displays API success message on correct credentials', async () => {
+        global.fetch = jest.fn((url, options) => {
+            const { email, password } = JSON.parse(options.body);
+
+            if (email === mockUser.email && password === mockUser.password) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({ message: 'Login successful' }),
+                });
+            } else {
+                return Promise.resolve({
+                    ok: false,
+                    status: 401,
+                    json: () => Promise.resolve({ error: 'Invalid credentials' }),
+                });
+            }
+        });
+
+        const { getByPlaceholderText, getByRole, queryByText } = render(<SignIn />);
+        const emailInput = getByPlaceholderText('Email');
+        const passwordInput = getByPlaceholderText('Password');
+        const signInButton = getByRole('button', { name: 'Sign in' });
+
+        fireEvent.change(emailInput, { target: { value: 'test@test.com' } });
+        fireEvent.change(passwordInput, { target: { value: 'correctpassword' } });
+        fireEvent.click(signInButton);
+
+        // expect the error message to not be displayed
+        const errorMessage = await queryByText('Invalid credentials');
+        expect(errorMessage).not.toBeInTheDocument();
+    });
+
     test('Displays API error message on invalid credentials', async () => {
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: false,
-                status: 401,
-                json: () => Promise.resolve({ error: 'Invalid credentials' }),
-            })
-        );
+        global.fetch = jest.fn((url, options) => {
+            const { email, password } = JSON.parse(options.body);
+
+            if (email === mockUser.email && password === mockUser.password) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({ message: 'Login successful' }),
+                });
+            } else {
+                return Promise.resolve({
+                    ok: false,
+                    status: 401,
+                    json: () => Promise.resolve({ error: 'Invalid credentials' }),
+                });
+            }
+        });
 
         const { getByPlaceholderText, getByRole, findByText } = render(<SignIn />);
         const emailInput = getByPlaceholderText('Email');
         const passwordInput = getByPlaceholderText('Password');
         const signInButton = getByRole('button', { name: 'Sign in' });
 
-        fireEvent.change(emailInput, { target: { value: 'user@example.com' } });
+        fireEvent.change(emailInput, { target: { value: 'wronguser@example.com' } });
         fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
         fireEvent.click(signInButton);
 
