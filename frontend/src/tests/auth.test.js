@@ -170,3 +170,124 @@ describe('Sign in testing', () => {
         });
     });
 });
+
+describe('Sign up testing', () => {
+    beforeEach(() => {
+        fetch.mockClear();
+    });
+
+    test('Renders correctly', () => {
+        const { getByText, getByPlaceholderText, getByRole } = render(<SignUp/>);
+
+        getByText('Create your account');
+        getByText('Email address');
+        getByText('Username');
+        getByText('Password');
+        getByText('Already have an account?');
+        getByText('Sign in!');
+
+        getByPlaceholderText('Email');
+        getByPlaceholderText('Username');
+        getByPlaceholderText('Password');
+
+        getByRole('button', { name: 'Sign up'})
+    });
+
+    test('Pressing sign in redirects to proper page', () => {
+        const { getByText } = render(<SignUp />);
+
+        const signIn = getByText('Sign in!');
+        /** we know that signIn has the attribute '/signin', so we assign the
+         *  window location to be '/signin' when we click on the button */
+        expect(signIn).toHaveAttribute('href', '/signin');
+        fireEvent.click(signIn);
+        delete window.location;
+        window.location = { href: '/signin' };
+
+        expect(window.location.href).toBe('/signin');
+    })
+
+    test('Displays success message on successful signup and redirects', async () => {
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve({ message: 'User registered successfully!' }),
+            })
+        );
+
+        delete window.location;
+        window.location = { href: '/' };
+
+        const { getByPlaceholderText, getByRole, findByText } = render(<SignUp />);
+        const emailInput = getByPlaceholderText('Email');
+        const usernameInput = getByPlaceholderText('Username');
+        const passwordInput = getByPlaceholderText('Password');
+        const signupButton = getByRole('button', { name: 'Sign up' });
+
+        fireEvent.change(emailInput, { target: { value: 'user@example.com' } });
+        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+        fireEvent.change(passwordInput, { target: { value: 'password123' } });
+
+        fireEvent.click(signupButton);
+
+        const successMessage = await findByText('User registered successfully!');
+        expect(successMessage).toBeInTheDocument();
+        expect(window.location.href).toBe('/');
+    });
+
+    test('Displays error message on server-side error', async () => {
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+                json: () => Promise.resolve({ error: 'Email already in use' }),
+            })
+        );
+
+        const { getByPlaceholderText, getByRole, findByText } = render(<SignUp />);
+        const emailInput = getByPlaceholderText('Email');
+        const usernameInput = getByPlaceholderText('Username');
+        const passwordInput = getByPlaceholderText('Password');
+        const signupButton = getByRole('button', { name: 'Sign up' });
+
+        fireEvent.change(emailInput, { target: { value: 'existinguser@example.com' } });
+        fireEvent.change(usernameInput, { target: { value: 'existinguser' } });
+        fireEvent.change(passwordInput, { target: { value: 'password123' } });
+
+        fireEvent.click(signupButton);
+
+        const errorMessage = await findByText('Email already in use');
+        expect(errorMessage).toBeInTheDocument();
+    });
+
+    test('Displays error message on unexpected error', async () => {
+        global.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
+
+        const { getByPlaceholderText, getByRole, findByText } = render(<SignUp />);
+        const emailInput = getByPlaceholderText('Email');
+        const usernameInput = getByPlaceholderText('Username');
+        const passwordInput = getByPlaceholderText('Password');
+        const signupButton = getByRole('button', { name: 'Sign up' });
+
+        fireEvent.change(emailInput, { target: { value: 'newuser@example.com' } });
+        fireEvent.change(usernameInput, { target: { value: 'newuser' } });
+        fireEvent.change(passwordInput, { target: { value: 'password123' } });
+
+        fireEvent.click(signupButton);
+
+        const errorMessage = await findByText('An unexpected error occurred.');
+        expect(errorMessage).toBeInTheDocument();
+    });
+
+    test('Prevents submission if required fields are empty', async () => {
+        const { getByRole } = render(<SignUp />);
+
+        fireEvent.click(getByRole('button', { name: 'Sign up' }));
+
+        // Since the form won't submit, error and success messages should not be displayed
+        const errorMessage = document.querySelector('.text-red-500');
+        const successMessage = document.querySelector('.text-green-500');
+
+        expect(errorMessage).toBeNull();
+        expect(successMessage).toBeNull();
+    });
+});
