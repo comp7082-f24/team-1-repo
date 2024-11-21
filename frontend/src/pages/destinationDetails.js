@@ -36,16 +36,19 @@ function DestinationDetails() {
     return "0";
   };
 
+  // Helper function to summarize weather data for the top of the page
   const summarizeWeather = (events) => {
     const summary = {};
 
     events.forEach((event) => {
       if (event.weather?.condition) {
+        const eventID = event._id;
         const condition = event.weather.condition;
         const wmoCode = getWMOCodeFromCondition(condition);
         const weatherType = WMO_CODE_MAP[wmoCode].day.description;
 
         summary[wmoCode] = {
+          eventNum: eventID,
           count: (summary[wmoCode]?.count || 0) + 1,
           description: weatherType,
           image: WMO_CODE_MAP[wmoCode].day.image,
@@ -60,6 +63,7 @@ function DestinationDetails() {
     document.title = "Destination Details";
   }, []);
 
+  // check if user is authenticated
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
@@ -82,6 +86,7 @@ function DestinationDetails() {
     checkAuthStatus();
   }, []);
 
+  // fetches event from server and updates the state
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -112,6 +117,7 @@ function DestinationDetails() {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  // remove event from the user's list of events
   const handleRemoveEvent = async (eventId) => {
     try {
       if (!eventId) {
@@ -127,28 +133,42 @@ function DestinationDetails() {
     }
   };
 
+  // responsible for event card display
   const EventCard = ({ event, index, isOpen }) => {
     const [locationInfo, setLocationInfo] = useState({});
-
+  
+    // Fetches location data and image from Wiki
     useEffect(() => {
       const fetchLocationData = async () => {
         try {
-          const response = await fetch(`/wiki-image?location=${encodeURIComponent(event.location.city)}`);
+          const response = await fetch(
+            `/wiki-image?location=${encodeURIComponent(event.location.city)}`
+          );
           if (!response.ok) {
             throw new Error("Location not found.");
           }
           const data = await response.json();
-          setLocationInfo((prev) => ({ ...prev, [event.location.city]: data.imageUrl }));
+          setLocationInfo((prev) => ({
+            ...prev,
+            [event.location.city]: data.imageUrl,
+          }));
         } catch (error) {
           console.error(error);
         }
       };
-
+  
       fetchLocationData();
     }, [event.location.city]);
-
+  
+    // Find the corresponding weather data for this event from weatherSummary
+    const weatherEntry = Object.values(weatherSummary).find(
+      (summary) => summary.eventNum === event._id
+    );
+  
+    // Event card component
     return (
-      <div className="items-center border border-black rounded-md">
+      <div className="relative items-center border border-black rounded-md">
+        {/* Remove Button */}
         <div className="flex justify-end items-center">
           <button
             className="text-xl font-bold mt-2 mr-2"
@@ -157,6 +177,7 @@ function DestinationDetails() {
             ✖
           </button>
         </div>
+        {/* Event Information */}
         <div className="mt-4 bg-white rounded-lg shadow-md overflow-hidden">
           <img
             className="w-full h-40 object-cover"
@@ -178,15 +199,30 @@ function DestinationDetails() {
               Event #: {index}, Status: {isOpen ? "Open" : "Closed"}
             </p>
           </div>
+  
+          {/* Weather Information */}
+          {weatherEntry && (
+            <div className="absolute bottom-2 right-2 flex items-center bg-white ">
+              <img
+                src={weatherEntry.image}
+                alt={weatherEntry.description}
+                title={weatherEntry.description}
+                className="w-8 h-8 mr-2"
+              />
+              <p className="text-sm text-gray-700">{weatherEntry.description}</p>
+            </div>
+          )}
         </div>
       </div>
     );
   };
   
+
   return (
     <div className="sm:px-10 mt-6 mx-auto p-4 relative z-10">
       <p className="text-4xl font-bold mb-6">Trip Summary</p>
 
+      {/* Weather Summary */}
       <div className="flex items-center w-full justify-between space-x-4">
         <div className="flex items-center justify-evenly w-1/2">
           {Object.entries(weatherSummary).map(([code, data], index) => (
@@ -205,10 +241,12 @@ function DestinationDetails() {
           ))}
         </div>
 
+        {/* Activites Counted */}
         <div className="flex items-center justify-center w-1/4">
           <p className="text-2xl">{events?.length || 0} activities planned</p>
         </div>
 
+        {/* Weather Alert Button */}
         <div className="flex items-center justify-center w-1/4">
           <button
             className={`p-2 rounded flex items-center justify-center space-x-2 ${
@@ -231,6 +269,7 @@ function DestinationDetails() {
         </div>
       </div>
 
+      {/* Event Card List */}
       <div className="flex flex-col justify-center items-start border border-black rounded-md mt-10">
         <div className="flex w-full">
           <div className="flex flex-col ml-4 items-center w-1/3">
@@ -241,7 +280,9 @@ function DestinationDetails() {
                     className="flex justify-between items-center w-full p-4 text-left hover:bg-gray-200 focus:outline-none"
                     onClick={() => toggleAnswer(index)}
                   >
-                    <span>{event.date.toLocaleDateString() || "No date available"}</span>
+                    <span>
+                      {event.date.toLocaleDateString() || "No date available"}
+                    </span>
                     <svg
                       className={`w-6 h-6 transform transition-transform duration-200 ${
                         openIndex === index ? "rotate-180" : "rotate-0"
@@ -276,13 +317,10 @@ function DestinationDetails() {
             ))}
           </div>
 
+          {/* Map Component */}
           <div className="w-2/3 p-4">
             <div className="border border-gray-300 rounded-lg shadow-md p-6">
-              <MapComponent
-                
-                location={locationName}
-                className="w-full h-full"
-              />
+              <MapComponent location={locationName} className="w-full h-full" />
             </div>
           </div>
         </div>
