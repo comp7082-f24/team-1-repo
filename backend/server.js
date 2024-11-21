@@ -9,23 +9,16 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const saltRounds = 10;
 const app = express();
-const port = process.env.PORT || 5001;
+
 require("dotenv").config();
 app.use(cookieParser());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const secretKey = process.env.JWT_SECRET_KEY;
 const uri = process.env.ATLAS_URI;
-mongoose.connect(uri, {
-  useNewUrlParser: true,
-});
-const connection = mongoose.connection;
-connection.once("open", () => {
-  console.log("MongoDB database connection established successfully");
-});
-
+const GEOAPIFY_API_KEY = process.env.GEOAPIFY_API_KEY;
+const secretKey = process.env.JWT_SECRET_KEY;
 app.use(express.static(path.join(__dirname, "..", "frontend/build")));
 
 // GET ROUTES
@@ -594,11 +587,6 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
   });
 }
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-  console.log(`Click here to open: http://localhost:${port}`);
-});
-
 // PUT ROUTES
 {
   // update username
@@ -660,3 +648,5 @@ app.listen(port, () => {
     }
   });
 }
+
+module.exports = { app, mongoose, uri };
