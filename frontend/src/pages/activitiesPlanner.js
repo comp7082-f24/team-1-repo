@@ -146,7 +146,15 @@ function ActivitiesPlanner() {
       alert("No events to save for the selected date.");
       return;
     }
-
+  
+    const confirmSave = window.confirm(
+      `You are about to save ${events.length} activities for the selected date. Do you want to proceed?`
+    );
+    if (!confirmSave) {
+      alert("Trip save canceled.");
+      return;
+    }
+  
     try {
       // Create a payload with detailed weather and location information
       const payload = events.map((event) => {
@@ -168,18 +176,18 @@ function ActivitiesPlanner() {
           },
         };
       });
-
+  
       const response = await axios.post("/saveevent", {
         userId: user.id,
         events: payload,
       });
-
+  
       if (response.status === 200) {
         setSaveButtonText("Saved");
+        alert("Trip saved successfully!");
         setTimeout(() => {
           setSaveButtonText("Save Trip");
         }, 5000);
-        alert("Trip saved successfully!");
         console.log("Trip saved successfully!");
       }
     } catch (error) {
@@ -187,6 +195,7 @@ function ActivitiesPlanner() {
       alert("Error saving trip. Please try again.");
     }
   };
+  
 
   return (
     <div>
