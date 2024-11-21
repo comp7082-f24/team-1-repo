@@ -8,10 +8,10 @@ import { WMO_CODE_MAP } from "../utils/weatherCode";
 function DestinationDetails() {
   const [events, setEvents] = useState([]);
   const [user, setUser] = useState(null);
+  const [locationName, setLocationName] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
   const [isWeatherAlertSet, setIsWeatherAlertSet] = useState(false);
-  const [openDropdownIndex, setOpenDropdownIndex] = useState(null);
   const [weatherSummary, setWeatherSummary] = useState({});
 
   // Helper function to get WMO code from weather condition
@@ -93,6 +93,7 @@ function DestinationDetails() {
         updatedEvents.sort((a, b) => a.date - b.date);
         setEvents(updatedEvents);
         summarizeWeather(updatedEvents);
+        setLocationName(updatedEvents[0].location.city);
       } catch (error) {
         console.error("Error fetching events:", error);
       }
@@ -119,52 +120,69 @@ function DestinationDetails() {
       }
       await axios.post("/removeEvent", { userId: user.id, eventId });
       setEvents((prevEvents) =>
-        prevEvents.filter((event) => event._id !== eventId)
+        prevEvents.filter((events) => events._id !== eventId)
       );
     } catch (error) {
       console.error("Error removing event:", error);
     }
   };
 
-  const EventCard = ({ event, index, isOpen }) => (
-    <div className="items-center border border-black rounded-md">
-      <div className="flex justify-end items-center">
-        <button
-          className="text-xl font-bold mt-2 mr-2"
-          onClick={() => handleRemoveEvent(event._id)}
-        >
-          ✖
-        </button>
-      </div>
-      <div className="mt-4 bg-white rounded-lg shadow-md overflow-hidden">
-        <img
-          className="w-full h-40 object-cover"
-          src={event.image || placeholder}
-          alt={event.title || "Event Image"}
-        />
-        <div className="p-4">
-          <div className="flex justify-between items-center">
-            <a href="#" className="text-blue-600 hover:underline font-semibold">
-              {event.title || "Untitled Event"}
-            </a>
-          </div>
-          <p className="mt-2 text-sm text-gray-600">
-            Event Index: {index}, Open Status: {isOpen ? "Open" : "Closed"}
-          </p>
-          <p className="mt-2 text-sm text-gray-600">
-            {event.description || "No description available"}
-          </p>
-          <div className="flex justify-between items-center mt-2">
-            <div>
-              <p className="text-sm">{event.time || "No time specified"}</p>
+  const EventCard = ({ event, index, isOpen }) => {
+    const [locationInfo, setLocationInfo] = useState({});
+
+    useEffect(() => {
+      const fetchLocationData = async () => {
+        try {
+          const response = await fetch(`/wiki-image?location=${encodeURIComponent(event.location.city)}`);
+          if (!response.ok) {
+            throw new Error("Location not found.");
+          }
+          const data = await response.json();
+          setLocationInfo((prev) => ({ ...prev, [event.location.city]: data.imageUrl }));
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      fetchLocationData();
+    }, [event.location.city]);
+
+    return (
+      <div className="items-center border border-black rounded-md">
+        <div className="flex justify-end items-center">
+          <button
+            className="text-xl font-bold mt-2 mr-2"
+            onClick={() => handleRemoveEvent(event._id)}
+          >
+            ✖
+          </button>
+        </div>
+        <div className="mt-4 bg-white rounded-lg shadow-md overflow-hidden">
+          <img
+            className="w-full h-40 object-cover"
+            src={locationInfo[event.location.city] || placeholder}
+            alt={event.title || "Event Image"}
+          />
+          <div className="p-4">
+            <div className="flex justify-between items-center">
+              <a
+                href={event.website || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline font-semibold"
+              >
+                {event.title || "Untitled Event"}
+              </a>
             </div>
-            <p className="text-sm font-semibold">{event.date.toLocaleDateString() || "No date"}</p>
+            <p className="mt-2 text-sm text-gray-600">
+              Event #: {index}, Status: {isOpen ? "Open" : "Closed"}
+            </p>
           </div>
         </div>
       </div>
-    </div>
-  );
-
+    );
+  };
+  
   return (
     <div className="sm:px-10 mt-6 mx-auto p-4 relative z-10">
       <p className="text-4xl font-bold mb-6">Trip Summary</p>
@@ -261,7 +279,8 @@ function DestinationDetails() {
           <div className="w-2/3 p-4">
             <div className="border border-gray-300 rounded-lg shadow-md p-6">
               <MapComponent
-                location={{ latitude: 0, longitude: 0 }}
+                
+                location={locationName}
                 className="w-full h-full"
               />
             </div>

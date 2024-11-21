@@ -12,7 +12,6 @@ import WikiIntro from "../components/WikiIntro";
 import axios from "axios";
 import { WMO_CODE_MAP } from "../utils/weatherCode";
 
-
 const GEOAPIFY_API_KEY = "1bff187db2c849e1a26c02a3c16c8462";
 
 function ActivitiesPlanner() {
@@ -28,6 +27,7 @@ function ActivitiesPlanner() {
   );
   const [error, setError] = useState(null);
   const [, setTabSelected] = useState(0);
+  const [saveButtonText, setSaveButtonText] = useState("Save Trip");
 
   const setAvailableActivities = useCallback(
     (modifier) =>
@@ -175,6 +175,10 @@ function ActivitiesPlanner() {
       });
 
       if (response.status === 200) {
+        setSaveButtonText("Saved");
+        setTimeout(() => {
+          setSaveButtonText("Save Trip");
+        }, 5000);
         alert("Trip saved successfully!");
         console.log("Trip saved successfully!");
       }
@@ -254,12 +258,13 @@ function ActivitiesPlanner() {
                           ))}
                         </ul>
                         <button
-                          className="absolute bottom-4 right-4 bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700"
+                          className="bottom-10 right-4 bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700"
                           onClick={() =>
                             saveTrip(tripPlan.plan[dateSelected] ?? [])
                           }
+                          style={{ position: "absolute" }}
                         >
-                          Save Trip
+                          {saveButtonText}
                         </button>
                       </div>
                     )}
