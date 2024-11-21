@@ -1,3 +1,9 @@
+<h1>Travel Time</h1></br>
+Travel Time is a webapp that helps users plan their trip based on historical weather data and available activities/events
+
+
+<h3>Commands to run<h3>
+
 cd frontend 
 <br>
 npm i
