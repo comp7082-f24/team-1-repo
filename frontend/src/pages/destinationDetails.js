@@ -123,16 +123,18 @@ function DestinationDetails() {
       console.error("Error: eventId is undefined.");
       return;
     }
-  
+
     const confirmRemoval = window.confirm(
       "Are you sure you want to remove this event?"
     );
     if (!confirmRemoval) return;
-  
+
     try {
       await axios.post("/removeEvent", { userId: user.id, eventId });
       setEvents((prevEvents) => {
-        const updatedEvents = prevEvents.filter((event) => event._id !== eventId);
+        const updatedEvents = prevEvents.filter(
+          (event) => event._id !== eventId
+        );
         // Refresh weather summary and activities counted
         summarizeWeather(updatedEvents);
         return updatedEvents;
@@ -147,7 +149,7 @@ function DestinationDetails() {
   // responsible for event card display
   const EventCard = ({ event, index, isOpen }) => {
     const [locationInfo, setLocationInfo] = useState({});
-  
+
     // Fetches location data and image from Wiki
     useEffect(() => {
       const fetchLocationData = async () => {
@@ -167,15 +169,15 @@ function DestinationDetails() {
           console.error(error);
         }
       };
-  
+
       fetchLocationData();
     }, [event.location.city]);
-  
+
     // Find the corresponding weather data for this event from weatherSummary
     const weatherEntry = Object.values(weatherSummary).find(
       (summary) => summary.eventNum === event._id
     );
-  
+
     // Event card component
     return (
       <div className="relative items-center border border-black rounded-md">
@@ -210,7 +212,7 @@ function DestinationDetails() {
               Event #: {index}, Status: {isOpen ? "Open" : "Closed"}
             </p>
           </div>
-  
+
           {/* Weather Information */}
           {weatherEntry && (
             <div className="absolute bottom-2 right-2 flex items-center bg-white ">
@@ -220,14 +222,15 @@ function DestinationDetails() {
                 title={weatherEntry.description}
                 className="w-8 h-8 mr-2"
               />
-              <p className="text-sm text-gray-700">{weatherEntry.description}</p>
+              <p className="text-sm text-gray-700">
+                {weatherEntry.description}
+              </p>
             </div>
           )}
         </div>
       </div>
     );
   };
-  
 
   return (
     <div className="sm:px-10 mt-6 mx-auto p-4 relative z-10">
@@ -330,8 +333,11 @@ function DestinationDetails() {
 
           {/* Map Component */}
           <div className="w-2/3 p-4">
-            <div className="border border-gray-300 rounded-lg shadow-md p-6">
-              <MapComponent location={locationName} className="w-full h-full" />
+            <div className="relative border border-gray-300 rounded-lg shadow-md">
+              <MapComponent
+                location={locationName}
+                className="w-full h-full aspect-video rounded-lg"
+              />
             </div>
           </div>
         </div>
