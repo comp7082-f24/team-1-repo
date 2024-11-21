@@ -9,8 +9,8 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const saltRounds = 10;
 const app = express();
-
 require("dotenv").config();
+
 app.use(cookieParser());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
@@ -19,8 +19,8 @@ app.use(express.json());
 const uri = process.env.ATLAS_URI;
 const GEOAPIFY_API_KEY = process.env.GEOAPIFY_API_KEY;
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-
 const secretKey = process.env.JWT_SECRET_KEY;
+
 app.use(express.static(path.join(__dirname, "..", "frontend/build")));
 
 // GET ROUTES
@@ -64,8 +64,8 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
     app.get("/searchhistory/:userId", async (req, res) => {
         const userId = req.params.userId;
 
-        try {
-            await mongoose.connect(uri);
+    try {
+      await mongoose.connect(uri);
 
             const searchHistory = await SavedQuery.find({
                 userId: userId,
@@ -90,13 +90,13 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
     app.get("/getcoordinates", (req, res) => {
         const location = req.query.location;
 
-        let URL = `https://geocoding-api.open-meteo.com/v1/search?name=${location}&count=1&language=en&format=json`;
+    let URL = `https://geocoding-api.open-meteo.com/v1/search?name=${location}&count=1&language=en&format=json`;
 
-        fetch(URL)
-            .then((response) => response.json())
-            .then(async (data) => {
-                let latitude = data.results[0].latitude;
-                let longitude = data.results[0].longitude;
+    fetch(URL)
+      .then((response) => response.json())
+      .then(async (data) => {
+        let latitude = data.results[0].latitude;
+        let longitude = data.results[0].longitude;
 
                 res.status(200).json({
                     latitude: latitude,
@@ -119,8 +119,8 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
             { _id: "rome", count: 1 },
         ];
 
-        try {
-            await mongoose.connect(uri);
+    try {
+      await mongoose.connect(uri);
 
             // fetch popular queries from the database
             const popularQueries = await SavedQuery.aggregate([
@@ -173,26 +173,26 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
                 })
             );
 
-            res.status(200).json(dummyWikiDataArray);
-        } finally {
-            mongoose.connection.close();
-        }
-    });
+      res.status(200).json(dummyWikiDataArray);
+    } finally {
+      mongoose.connection.close();
+    }
+  });
 
     // get time
     app.get("/get-time", async (req, res) => {
         const { latitude, longitude } = req.query;
         const url = `https://timeapi.io/api/time/current/coordinate?latitude=${latitude}&longitude=${longitude}`;
 
-        try {
-            const timeResponse = await fetch(url);
-            if (!timeResponse.ok) {
-                throw new Error("Couldn't fetch result");
-            }
+    try {
+      const timeResponse = await fetch(url);
+      if (!timeResponse.ok) {
+        throw new Error("Couldn't fetch result");
+      }
 
-            const timeResponseData = await timeResponse.json();
-            let temp = parseInt(timeResponseData.time.substring(0, 2), 10);
-            let time;
+      const timeResponseData = await timeResponse.json();
+      let temp = parseInt(timeResponseData.time.substring(0, 2), 10);
+      let time;
 
             if (temp > 12) {
                 time =
@@ -203,12 +203,12 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
                 time = timeResponseData.time + " a.m";
             }
 
-            res.status(200).json({ time });
-        } catch (error) {
-            console.error("Error fetching time:", error);
-            res.status(500).json({ error: "Error fetching time" });
-        }
-    });
+      res.status(200).json({ time });
+    } catch (error) {
+      console.error("Error fetching time:", error);
+      res.status(500).json({ error: "Error fetching time" });
+    }
+  });
 
     // get wiki summary
     app.get("/wiki-summary", async (req, res) => {
@@ -219,19 +219,19 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
                 .json({ error: "Location parameter is required" });
         }
 
-        const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${location}`;
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error("Location not found.");
-            }
-            const data = await response.json();
-            res.status(200).json(data);
-        } catch (error) {
-            console.error("Error fetching Wikipedia data:", error);
-            res.status(500).json({ error: "Error fetching Wikipedia data" });
-        }
-    });
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${location}`;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Location not found.");
+      }
+      const data = await response.json();
+      res.status(200).json(data);
+    } catch (error) {
+      console.error("Error fetching Wikipedia data:", error);
+      res.status(500).json({ error: "Error fetching Wikipedia data" });
+    }
+  });
 
     // get wiki image
     app.get("/wiki-image", async (req, res) => {
@@ -246,21 +246,21 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
             location
         )}`;
 
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error("Location not found.");
-            }
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Location not found.");
+      }
 
-            const data = await response.json();
-            const imageUrl = data.originalimage?.source || null;
+      const data = await response.json();
+      const imageUrl = data.originalimage?.source || null;
 
-            res.status(200).json({ imageUrl });
-        } catch (error) {
-            console.error("Error fetching Wikipedia data:", error);
-            res.status(500).json({ error: "Error fetching Wikipedia data" });
-        }
-    });
+      res.status(200).json({ imageUrl });
+    } catch (error) {
+      console.error("Error fetching Wikipedia data:", error);
+      res.status(500).json({ error: "Error fetching Wikipedia data" });
+    }
+  });
 
     app.get("/getplaces", async (req, res) => {
         try {
@@ -281,6 +281,26 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
             res.status(500).json({ error: "Error fetching places", error });
         }
     });
+  // Get user events by user ID
+  app.get("/events/:userId", async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+      await mongoose.connect(uri);
+
+      const user = await Account.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.status(200).json({ events: user.events });
+    } catch (err) {
+      console.error("Error fetching user events:", err);
+      res.status(500).json({ error: "Error fetching user events" });
+    } finally {
+      mongoose.connection.close();
+    }
+  });
 
     app.get("/*", function (req, res) {
         res.sendFile(
@@ -296,12 +316,12 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
 
 // POST ROUTES
 {
-    // signup route
-    app.post("/signup", async (req, res) => {
-        const fields = req.body;
+  // signup route
+  app.post("/signup", async (req, res) => {
+    const fields = req.body;
 
-        try {
-            await mongoose.connect(uri, { useNewUrlParser: true });
+    try {
+      await mongoose.connect(uri, { useNewUrlParser: true });
 
             const existingUser = await Account.findOne({ email: fields.email });
             if (existingUser) {
@@ -349,9 +369,9 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
     app.post("/signin", async (req, res) => {
         const fields = req.body;
 
-        try {
-            await mongoose.connect(uri);
-            const user = await Account.findOne({ email: fields.email });
+    try {
+      await mongoose.connect(uri);
+      const user = await Account.findOne({ email: fields.email });
 
             if (user) {
                 const isMatch = await bcrypt.compare(
@@ -393,18 +413,18 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
     app.post("/isauth", (req, res) => {
         const token = req.cookies.token;
 
-        if (!token) {
-            return res.status(401).send({ authenticated: false });
-        }
+    if (!token) {
+      return res.status(401).send({ authenticated: false });
+    }
 
-        jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
-            if (err) {
-                return res.status(403).send({ authenticated: false });
-            }
+    jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
+      if (err) {
+        return res.status(403).send({ authenticated: false });
+      }
 
-            res.send({ authenticated: true, user });
-        });
+      res.send({ authenticated: true, user });
     });
+  });
 
     // signout route
     app.post("/signout", (req, res) => {
@@ -446,21 +466,21 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
         const latitude = req.body.latitude;
         const longitude = req.body.longitude;
 
-        // The +T00:00:00 is to deal with a possible of by one bug, related to javascript Date objects, and timezones.
-        const startYear = new Date(startDate + "T00:00:00").getFullYear();
-        const endYear = new Date(endDate + "T00:00:00").getFullYear();
-        const years_of_data = 5; // We'll gather data for the last 5 years
+    // The +T00:00:00 is to deal with a possible of by one bug, related to javascript Date objects, and timezones.
+    const startYear = new Date(startDate + "T00:00:00").getFullYear();
+    const endYear = new Date(endDate + "T00:00:00").getFullYear();
+    const years_of_data = 5; // We'll gather data for the last 5 years
 
-        const startDay = startDate.split("-")[2];
-        const endDay = endDate.split("-")[2];
-        const startMonth = startDate.split("-")[1];
-        const endMonth = endDate.split("-")[1];
-        const start = `${startMonth}-${startDay}`;
-        const end = `${endMonth}-${endDay}`;
-        const queryEndYear = new Date().getFullYear() - 1; // queryEndYear is one year less than the current year. This is to prevent querying the api for dates that don't have weather data yet, because they are in the future.
-        const queryStartYear = startYear - (endYear - queryEndYear); // queryStartYear is found by getting the diffrence between endYear and queryEndYear, and applying the same diffrence to startYear.
+    const startDay = startDate.split("-")[2];
+    const endDay = endDate.split("-")[2];
+    const startMonth = startDate.split("-")[1];
+    const endMonth = endDate.split("-")[1];
+    const start = `${startMonth}-${startDay}`;
+    const end = `${endMonth}-${endDay}`;
+    const queryEndYear = new Date().getFullYear() - 1; // queryEndYear is one year less than the current year. This is to prevent querying the api for dates that don't have weather data yet, because they are in the future.
+    const queryStartYear = startYear - (endYear - queryEndYear); // queryStartYear is found by getting the diffrence between endYear and queryEndYear, and applying the same diffrence to startYear.
 
-        let promises = []; // Array to store the promises from the multiple weather api calls in the next block.
+    let promises = []; // Array to store the promises from the multiple weather api calls in the next block.
 
         for (let i = 0; i < years_of_data; i++) {
             const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=${latitude}&longitude=${longitude}&start_date=${
@@ -469,37 +489,35 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
                 queryEndYear - i
             }-${end}&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum`;
 
-            promises[i] = fetch(URL).then((Response) => Response.json()); // This will have the resolved promise be a json object instead of a response object.
-        }
+      promises[i] = fetch(URL).then((Response) => Response.json()); // This will have the resolved promise be a json object instead of a response object.
+    }
 
-        /* Promise.all accepts an iterable of promises, like an array, and will run the .then code, once all of the promises in the iterable have resolved,
+    /* Promise.all accepts an iterable of promises, like an array, and will run the .then code, once all of the promises in the iterable have resolved,
          or it will run the .catch code if any of the promises reject or if there is an error in the .then block. Using Promise.all means we can send our api
          requests at the same time instead of sequentionally, and also don't need to worry about the order they resolve in.*/
-        Promise.all(promises)
-            .then(async (responses) => {
-                const date = new Date(startDate + "T00:00:00"); // The +T00:00:00 is to deal with a possible of by one bug, related to javascript Date objects, and timezones.
-                const averagedData = {};
+    Promise.all(promises)
+      .then(async (responses) => {
+        const date = new Date(startDate + "T00:00:00"); // The +T00:00:00 is to deal with a possible of by one bug, related to javascript Date objects, and timezones.
+        const averagedData = {};
 
-                // For each day of data, initialize the array entry for the given day.
-                for (let day = 0; day < responses[0].daily.time.length; day++) {
-                    const dateIndex = date.toISOString()?.split("T")?.[0];
-                    averagedData[dateIndex] = {
-                        date: date.toDateString(),
-                        averageTemperature: 0,
-                        averagePrecipitation: 0,
-                    };
+        // For each day of data, initialize the array entry for the given day.
+        for (let day = 0; day < responses[0].daily.time.length; day++) {
+          const dateIndex = date.toISOString()?.split("T")?.[0];
+          averagedData[dateIndex] = {
+            date: date.toDateString(),
+            averageTemperature: 0,
+            averagePrecipitation: 0,
+          };
 
-                    // For each year of data, add the data to the days average, while dividing it by the number of years of data, so the average will be accurate.
-                    for (let year = 0; year < years_of_data; year++) {
-                        averagedData[dateIndex].averageTemperature +=
-                            responses[year].daily.temperature_2m_mean[day] /
-                            years_of_data;
-                        averagedData[dateIndex].averagePrecipitation +=
-                            responses[year].daily.precipitation_sum[day] /
-                            years_of_data;
-                    }
-                    date.setDate(date.getDate() + 1); // Increment the date by 1.
-                }
+          // For each year of data, add the data to the days average, while dividing it by the number of years of data, so the average will be accurate.
+          for (let year = 0; year < years_of_data; year++) {
+            averagedData[dateIndex].averageTemperature +=
+              responses[year].daily.temperature_2m_mean[day] / years_of_data;
+            averagedData[dateIndex].averagePrecipitation +=
+              responses[year].daily.precipitation_sum[day] / years_of_data;
+          }
+          date.setDate(date.getDate() + 1); // Increment the date by 1.
+        }
 
                 res.status(200).json({ averagedData: averagedData });
             })
@@ -560,19 +578,82 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
     });
 }
 
+  // Save event endpoint
+  app.post("/saveevent", async (req, res) => {
+    const { userId, events } = req.body;
+    console.log(req.body);
+    // Validate the payload
+    if (!userId || !Array.isArray(events) || events.length === 0) {
+      return res.status(400).json({ error: "Invalid payload" });
+    }
+
+    try {
+      await mongoose.connect(uri);
+
+      // Find the user by ID
+      const user = await Account.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Add the events to the user's event list
+      user.events.push(...events);
+      await user.save();
+      console.log("Trip saved successfully!");
+
+      res.status(201).json({ message: "Event saved successfully" });
+    } catch (err) {
+      console.error("Error saving event:", err);
+      res.status(500).json({ error: "Error saving event" });
+    } finally {
+      mongoose.connection.close();
+    }
+  });
+
+  // Remove event endpoint
+  app.post("/removeEvent", async (req, res) => {
+    const { userId, eventId } = req.body;
+
+    // Validate the payload
+    if (!userId || !eventId) {
+      return res.status(400).json({ error: "Invalid payload" });
+    }
+
+    try {
+      await mongoose.connect(uri);
+
+      // Find the user by ID
+      const user = await Account.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Remove the event with the specified ID
+      user.events = user.events.filter((event) => event.id !== eventId);
+      await user.save();
+
+      res.status(200).json({ message: "Event removed successfully" });
+    } catch (err) {
+      console.error("Error removing event:", err);
+      res.status(500).json({ error: "Error removing event" });
+    } finally {
+      mongoose.connection.close();
+    }
+  });
+
 // PUT ROUTES
 {
     // update username
     app.put("/updateusername", async (req, res) => {
         const { userId, newUsername } = req.body;
 
-        try {
-            await mongoose.connect(uri);
-            const updatedUser = await Account.findByIdAndUpdate(
-                userId,
-                { username: newUsername },
-                { new: true }
-            );
+    try {
+      await mongoose.connect(uri);
+      const updatedUser = await Account.findByIdAndUpdate(
+        userId,
+        { username: newUsername },
+        { new: true }
+      );
 
             if (!updatedUser) {
                 return res.status(404).json({ error: "User not found" });
@@ -594,9 +675,9 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
     app.put("/updatepassword", async (req, res) => {
         const { userId, oldPassword, newPassword } = req.body;
 
-        try {
-            await mongoose.connect(uri);
-            const user = await Account.findById(userId);
+    try {
+      await mongoose.connect(uri);
+      const user = await Account.findById(userId);
 
             if (!user) {
                 return res.status(404).json({ error: "User not found" });
