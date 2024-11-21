@@ -119,17 +119,28 @@ function DestinationDetails() {
 
   // remove event from the user's list of events
   const handleRemoveEvent = async (eventId) => {
+    if (!eventId) {
+      console.error("Error: eventId is undefined.");
+      return;
+    }
+  
+    const confirmRemoval = window.confirm(
+      "Are you sure you want to remove this event?"
+    );
+    if (!confirmRemoval) return;
+  
     try {
-      if (!eventId) {
-        console.error("Error: eventId is undefined.");
-        return;
-      }
       await axios.post("/removeEvent", { userId: user.id, eventId });
-      setEvents((prevEvents) =>
-        prevEvents.filter((events) => events._id !== eventId)
-      );
+      setEvents((prevEvents) => {
+        const updatedEvents = prevEvents.filter((event) => event._id !== eventId);
+        // Refresh weather summary and activities counted
+        summarizeWeather(updatedEvents);
+        return updatedEvents;
+      });
+      alert("Event successfully removed!");
     } catch (error) {
       console.error("Error removing event:", error);
+      alert("Failed to remove event. Please try again.");
     }
   };
 
