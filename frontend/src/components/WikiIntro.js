@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocationData } from "../utils/contexts";
+
 export default function WikiIntro() {
   const [locationInfo, setLocationInfo] = useState({});
   const [locationData, setLocationData] = useLocationData();
@@ -21,19 +22,18 @@ export default function WikiIntro() {
 
       fetchLocationData();
     }
-  }, []);
-
+  }, [locationData]); // Added locationData as dependency for useEffect
 
   return (
-    <div className="flex flex-row items-start col-span-12 space-x-4">
+    <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
       {locationInfo.thumbnail && (
         <img
           src={locationInfo.originalimage.source}
           alt={locationInfo.title}
-          className="w-1/4 rounded-md"
+          className="w-full sm:w-1/4 rounded-md"
         />
       )}
-      {locationInfo.extract && <p className="w-3/4">{locationInfo.extract}</p>}
+      {locationInfo.extract && <p className="w-full sm:w-3/4">{locationInfo.extract}</p>}
     </div>
   );
 }
