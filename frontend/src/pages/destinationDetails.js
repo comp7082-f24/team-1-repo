@@ -232,7 +232,7 @@ function DestinationDetails() {
 
           {/* Weather Information */}
           {event.weatherIcon && (
-            <div className="absolute bottom-2 right-2 flex items-center bg-white ">
+            <div className="flex items-center bg-white ">
               <img
                 src={event.weatherIcon}
                 alt={event.weatherDescription}
