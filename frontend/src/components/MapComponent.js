@@ -9,7 +9,7 @@ import {
 // Styles for the map container
 const containerStyle = {
   width: "100%",
-  height: "500px",
+  height: "400px",
 };
 
 // Default center if no location is found

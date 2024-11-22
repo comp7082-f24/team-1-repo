@@ -23,7 +23,7 @@ function ActivitiesPlanner() {
   const [weatherData] = useWeather();
   const [calendarApi, setCalendarApi] = useState(null);
   const [dateSelected, setDateSelected] = useState(
-    tripPlan["start"] ?? new Date().toISOString().split("T")[0]
+    tripPlan?.["start"] ?? new Date().toISOString().split("T")[0]
   );
   const [error, setError] = useState(null);
   const [, setTabSelected] = useState(0);
@@ -41,7 +41,7 @@ function ActivitiesPlanner() {
 
   const handleCalendarInitialization = useCallback((api) => {
     api?.select(dateSelected);
-    for (const [, events] of Object.entries(tripPlan.plan ?? {})) {
+    for (const [, events] of Object.entries(tripPlan?.plan ?? {})) {
       events?.forEach((e) => api?.addEvent({ ...e, title: e.name }));
     }
     setCalendarApi(api);
@@ -266,14 +266,6 @@ function ActivitiesPlanner() {
                             </li>
                           ))}
                         </ul>
-                        <button
-                          className="bottom-10 right-4 bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700 mb-8 sm:mb-4"
-                          onClick={() => saveTrip(tripPlan.plan[dateSelected] ?? [])}
-                          style={{ position: "absolute" }}
-                        >
-                          {saveButtonText}
-                        </button>
-
                       </div>
                     )}
                   </>
@@ -291,6 +283,15 @@ function ActivitiesPlanner() {
             weatherData={weatherData}
           />
           <MapComponent location={locationData?.location} />
+          <button
+            className="m-4 bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700 mb-8 sm:mb-4"
+            onClick={() =>
+              saveTrip(tripPlan?.plan[dateSelected] ?? [])
+            }
+            style={{ position: "absolute" }}
+          >
+            {saveButtonText}
+          </button>
         </div>
       </div>
     </div>
