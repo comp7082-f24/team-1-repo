@@ -226,7 +226,7 @@ function DestinationDetails() {
               </a>
             </div>
             <p className="mt-2 text-sm text-gray-600">
-              Event #: {index}, Status: {isOpen ? "Open" : "Closed"}
+              {event.description}
             </p>
           </div>
 
