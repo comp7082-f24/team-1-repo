@@ -184,11 +184,12 @@ function DestinationDetails() {
   };
   
   return (
-    <div className="sm:px-10 mt-6 mx-auto p-4 relative z-10">
-      <p className="text-4xl font-bold mb-6">Trip Summary</p>
+    <div className="max-w-4xl mx-auto p-4 relative z-10">
+      <h2 className="text-2xl font-bold mb-4">Trip Summary</h2>
 
-      <div className="flex items-center w-full justify-between space-x-4">
-        <div className="flex items-center justify-evenly w-1/2">
+      {/* Weather Summary and Trip Stats */}
+      <div className="flex flex-col sm:flex-row items-center w-full justify-between space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="flex items-center justify-evenly w-full sm:w-1/2">
           {Object.entries(weatherSummary).map(([code, data], index) => (
             <div key={index} className="flex items-center space-x-3">
               <div className="flex flex-col items-center">
@@ -205,24 +206,22 @@ function DestinationDetails() {
           ))}
         </div>
 
-        <div className="flex items-center justify-center w-1/4">
+        <div className="flex items-center justify-center w-full sm:w-1/4">
           <p className="text-2xl">{events?.length || 0} activities planned</p>
         </div>
 
-        <div className="flex items-center justify-center w-1/4">
+        <div className="flex items-center justify-center w-full sm:w-1/4">
           <button
-            className={`p-2 rounded flex items-center justify-center space-x-2 ${
-              isWeatherAlertSet
+            className={`p-2 rounded flex items-center justify-center space-x-2 ${isWeatherAlertSet
                 ? "bg-yellow-300 text-black"
                 : "bg-blue-500 text-white"
-            }`}
+              }`}
             onClick={handleWeatherAlertClick}
             style={{ minWidth: "180px" }}
           >
             <BellIcon
-              className={`w-6 h-6 ${
-                isWeatherAlertSet ? "text-yellow-400" : "text-gray-500"
-              }`}
+              className={`w-6 h-6 ${isWeatherAlertSet ? "text-yellow-400" : "text-gray-500"
+                }`}
             />
             <span>
               {isWeatherAlertSet ? "Weather Alerted" : "Weather Change Alert"}
@@ -231,59 +230,59 @@ function DestinationDetails() {
         </div>
       </div>
 
-      <div className="flex flex-col justify-center items-start border border-black rounded-md mt-10">
-        <div className="flex w-full">
-          <div className="flex flex-col ml-4 items-center w-1/3">
-            {events.map((event, index) => (
-              <div key={index} className="w-full m-4 mb-0">
-                <div className="rounded-lg">
-                  <button
-                    className="flex justify-between items-center w-full p-4 text-left hover:bg-gray-200 focus:outline-none"
-                    onClick={() => toggleAnswer(index)}
-                  >
-                    <span>{event.date.toLocaleDateString() || "No date available"}</span>
-                    <svg
-                      className={`w-6 h-6 transform transition-transform duration-200 ${
-                        openIndex === index ? "rotate-180" : "rotate-0"
+      {/* Events and Map Section */}
+      <div className="flex flex-col sm:flex-row justify-center items-start border border-black rounded-md overflow-hidden mt-10 space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="w-full sm:w-1/3 flex flex-col sm:ml-4 ml-0 items-center">
+          {events.map((event, index) => (
+            <div
+              key={index}
+              className="w-full m-4 mb-0 border border-gray-300 rounded-lg overflow-hidden"
+            >
+              <div className="rounded-lg">
+                <button
+                  className="flex justify-between items-center w-full p-4 text-left hover:bg-gray-200 focus:outline-none"
+                  onClick={() => toggleAnswer(index)}
+                >
+                  <span>{event.date.toLocaleDateString() || "No date available"}</span>
+                  <svg
+                    className={`w-6 h-6 transform transition-transform duration-200 ${openIndex === index ? "rotate-180" : "rotate-0"
                       }`}
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 15l-3-3h6l-3 3zm0 0l3-3H9l3 3z"
-                      />
-                    </svg>
-                  </button>
-                  <div
-                    className={`${
-                      openIndex === index ? "block" : "hidden"
-                    } p-4`}
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
                   >
-                    <EventCard
-                      event={event}
-                      index={index}
-                      isOpen={openIndex === index}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 15l-3-3h6l-3 3zm0 0l3-3H9l3 3z"
                     />
-                  </div>
+                  </svg>
+                </button>
+                <div
+                  className={`${openIndex === index ? "block" : "hidden"
+                    } p-4 overflow-hidden`}
+                >
+                  <EventCard
+                    event={event}
+                    index={index}
+                    isOpen={openIndex === index}
+                  />
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="w-2/3 p-4">
-            <div className="border border-gray-300 rounded-lg shadow-md p-6">
-              <MapComponent
-                
-                location={locationName}
-                className="w-full h-full"
-              />
             </div>
+          ))}
+        </div>
+
+
+        <div className="w-full sm:w-2/3 p-4">
+          <div className="border border-gray-300 rounded-lg shadow-md p-6">
+            <MapComponent
+              location={locationName}
+              className="w-full h-64 sm:h-full"
+            />
           </div>
         </div>
       </div>
