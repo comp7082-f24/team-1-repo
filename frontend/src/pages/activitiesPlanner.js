@@ -131,7 +131,7 @@ function ActivitiesPlanner() {
         if (data.authenticated) {
           setUser(data.user);
         } else {
-          window.location.href = "/signin";
+          // window.location.href = "/signin";
         }
       } catch (error) {
         console.error("Error checking auth status:", error);
@@ -142,6 +142,12 @@ function ActivitiesPlanner() {
   }, []);
 
   const saveTrip = async (events) => {
+    if (!isAuthenticated) {
+      alert("Please sign up or log in to save your trip.");
+      // window.location.href = "/signin"; 
+      return;
+    }
+
     if (!events.length) {
       alert("No events to save for the selected date.");
       return;
