@@ -180,6 +180,7 @@ function ActivitiesPlanner() {
         }, 5000);
         alert("Trip saved successfully!");
       }
+      alert("Trip saved successfully!");
     } catch (error) {
       console.error("Error saving trip:", error);
       alert("Error saving trip. Please try again.");
