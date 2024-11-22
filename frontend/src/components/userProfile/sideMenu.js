@@ -36,13 +36,13 @@ function SideMenu({ setSelectedItem, selectedItem, isMobileOpen }) {
             Search History
           </a>
         </li>
+        <hr />
         <li
-          className={`py-2 ${
-            selectedItem === "trips" ? "bg-blue-100 m-1 rounded" : ""
-          }`}
+          className={`py-2 ${selectedItem === "details" ? "bg-blue-100 m-1 rounded" : ""
+            }`}
+          onClick={() => handleItemClick("details")}
         >
           <a
-            href="/details"
             className="ml-2 hover:text-[#007bff] block"
           >
             <InformationCircleIcon className="w-5 h-5 inline-block mr-1" />

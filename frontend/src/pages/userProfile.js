@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SideMenu from '../components/userProfile/sideMenu';
 import EditProfile from '../components/userProfile/editProfile';
 import SearchHistory from '../components/userProfile/searchHistory';
+import DestinationDetails from '../pages/destinationDetails';
 import { MenuIcon } from '@heroicons/react/outline';
 
 function UserProfile() {
@@ -40,6 +41,8 @@ function UserProfile() {
                 return <EditProfile userId={user ? user.id : null} name={user ? user.username : null} />;
             case 'search':
                 return <SearchHistory userId={user ? user.id : null} />;
+            case 'details':
+                return <DestinationDetails/>
             default:
                 return <p>Select an option from the menu</p>;
         }
