@@ -1,7 +1,6 @@
 import React from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/navbar";
-import Footer from "./components/footer";
 import LandingPage from "./pages/landing.js";
 import ActivitiesPlanner from "./pages/activitiesPlanner.js";
 import DestinationDetails from "./pages/destinationDetails.js";
@@ -27,7 +26,6 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<UserProfile />} />
         </Routes>
-        {!hideComponents && <Footer />}
       </AppContextProvider>
     </div>
   );
