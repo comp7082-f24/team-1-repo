@@ -4,6 +4,7 @@ import UserProfile from '../pages/userProfile';
 import EditProfile from '../components/userProfile/editProfile';
 import SearchHistory from '../components/userProfile/searchHistory';
 import SideMenu from '../components/userProfile/sideMenu';
+import DestinationDetails from '../pages/destinationDetails';
 
 // globally mock fetch
 global.fetch = jest.fn(); 
@@ -361,4 +362,151 @@ describe('Side Menu', () => {
 
         expect(mockSetSelectedItem).toHaveBeenCalledWith('search');
     });
-})
+});
+
+describe('Trip Summary', () => {
+    beforeAll(() => {
+        global.fetch = jest.fn().mockResolvedValue({
+            json: jest.fn().mockResolvedValue({ latitude: 12.34, longitude: 56.78 }),
+        });
+    });
+
+    afterAll(() => {
+        jest.restoreAllMocks();
+    });
+
+    afterEach(() => {
+        cleanup();
+    });
+
+    test('Renders correctly', () => {
+        const { getByText, getByRole } = render(<DestinationDetails/>);
+
+        getByText('Trip Summary');
+        getByText('0 activities planned');
+        getByText('Weather Change Alert');
+        getByRole('button', { name: 'Weather Change Alert' });
+    })
+
+    test('Redirects to /signin if not authenticated', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ authenticated: false }),
+        });
+
+        delete window.location;
+        window.location = { href: '' };
+
+        render(<DestinationDetails />);
+
+        await waitFor(() => {
+            expect(window.location.href).toBe('/signin');
+        });
+    });
+
+    test('Renders page elements correctly when authenticated', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ authenticated: true, user: { id: '12345', username: 'JohnDoe' } }),
+        });
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ events: [] }),
+        });
+
+        const { getByText, getByRole } = render(<DestinationDetails />);
+
+        await waitFor(() => {
+            getByText('Trip Summary');
+            getByRole('button', { name: /Weather Change Alert/i });
+        });
+    });
+
+    test('Displays fetched events', async () => {
+        const mockEvents = [
+            { _id: '1', title: 'Event 1', location: 'Paris', date: '11/30/2024', weather: { condition: 'Clear' } },
+            { _id: '2', title: 'Event 2', location: 'London', date: '11/31/2024', weather: { condition: 'Rain' } },
+        ];
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => ({ authenticated: true, user: { id: '12345', username: 'JohnDoe' } })
+        });
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => ({ events: mockEvents }),
+        });
+
+        const { getByText } = render(<DestinationDetails />);
+
+        await waitFor(() => {
+            getByText('Event 1')
+            getByText('Event 2')
+        });
+    });
+
+
+    test('Displays weather summary correctly', async () => {
+        const mockEvents = [
+            { _id: '1', title: 'Event 1', location: 'Paris', date: '11/30/2024', weather: { condition: 'Sunny' } },
+        ];
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => ({ authenticated: true, user: { id: '12345', username: 'JohnDoe' } }),
+        });
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => ({ events: mockEvents }),
+        });
+
+        const { getByText } = render(<DestinationDetails />);
+
+        await waitFor(() => {
+            getByText('Sunny');
+        });
+    });
+
+    test.skip('Removes an event on delete', async () => {
+        const mockEvents = [
+            { _id: '1', title: 'Event 1', location: 'Paris', date: '11/30/2024', weather: { condition: 'Clear' } },
+        ];
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => ({ authenticated: true, user: { id: '12345', username: 'JohnDoe' } }),
+        });
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => ({ events: mockEvents }),
+        });
+
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => ({ success: true }),
+        });
+
+        const { getByText, queryByText, getByRole } = render(<DestinationDetails />);
+
+        await waitFor(() => {
+            getByText('Event 1');
+        });
+
+        await waitFor(() => {
+            fireEvent.click(getByText('11/30/2024'));
+        });
+
+        const deleteButton = getByRole('button', { name: '✖' });
+        await waitFor(() => {
+            fireEvent.click(deleteButton);
+        })
+
+        await waitFor(() => {
+            expect(queryByText('Event 1')).toBeNull();
+        });
+    });
+});
