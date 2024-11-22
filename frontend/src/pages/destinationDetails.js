@@ -94,10 +94,17 @@ function DestinationDetails() {
           throw new Error("Error fetching events.");
         }
         const data = await response.json();
-        const updatedEvents = data.events.map((event) => ({
-          ...event,
-          date: new Date(event.date),
-        }));
+  
+        const updatedEvents = data.events.map((event) => {
+          const wmoCode = getWMOCodeFromCondition(event.weather?.condition || "");
+          return {
+            ...event,
+            date: new Date(event.date),
+            weatherIcon: WMO_CODE_MAP[wmoCode]?.day.image || "",
+            weatherDescription: WMO_CODE_MAP[wmoCode]?.day.description || "",
+          };
+        });
+  
         updatedEvents.sort((a, b) => a.date - b.date);
         setEvents(updatedEvents);
         summarizeWeather(updatedEvents);
@@ -106,11 +113,12 @@ function DestinationDetails() {
         console.error("Error fetching events:", error);
       }
     };
-
+  
     if (user) {
       fetchEvents();
     }
   }, [user]);
+  
 
   const handleWeatherAlertClick = () => {
     setIsWeatherAlertSet((prev) => !prev);
@@ -223,22 +231,21 @@ function DestinationDetails() {
           </div>
 
           {/* Weather Information */}
-          {weatherEntry && (
+          {event.weatherIcon && (
             <div className="absolute bottom-2 right-2 flex items-center bg-white ">
               <img
-                src={weatherEntry.image}
-                alt={weatherEntry.description}
-                title={weatherEntry.description}
+                src={event.weatherIcon}
+                alt={event.weatherDescription}
+                title={event.weatherDescription}
                 className="w-8 h-8 mr-2"
               />
-              <p className="text-sm text-gray-700">
-                {weatherEntry.description}
-              </p>
+              <p className="text-sm text-gray-700">{event.weatherDescription}</p>
             </div>
           )}
         </div>
       </div>
     );
+
   };
 
   return (
