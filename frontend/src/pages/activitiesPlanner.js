@@ -166,9 +166,12 @@ function ActivitiesPlanner() {
             condition: weatherDescription,
             name: weatherDescription, // Adding the weather name (e.g., sunny, cloudy, etc.)
           },
+          latitude: event.lat,
+          longitude: event.lon,
         };
       });
 
+      console.log("Payload:", payload);
       const response = await axios.post("/saveevent", {
         userId: user.id,
         events: payload,

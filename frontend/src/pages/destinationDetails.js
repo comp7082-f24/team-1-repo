@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { BellIcon } from "@heroicons/react/solid";
 import placeholder from "../images/placeholder.png";
-import MapComponent from "../components/MapComponent";
+import MapComponentDetails from "../components/MapComponentDetails";
 import { WMO_CODE_MAP } from "../utils/weatherCode";
 
 function DestinationDetails() {
@@ -278,9 +278,9 @@ function DestinationDetails() {
 
           <div className="w-2/3 p-4">
             <div className="border border-gray-300 rounded-lg shadow-md p-6">
-              <MapComponent
-                
+              <MapComponentDetails
                 location={locationName}
+                events={events}
                 className="w-full h-full"
               />
             </div>

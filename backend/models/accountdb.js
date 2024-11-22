@@ -14,6 +14,8 @@ const eventSchema = new Schema({
         temperature: { type: String },
         condition: { type: String },
     },
+    longitude: { type: Number },
+    latitude: { type: Number }
 });
 
 // User schema
