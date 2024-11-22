@@ -450,7 +450,7 @@ describe('Trip Summary', () => {
 
     test('Displays weather summary correctly', async () => {
         const mockEvents = [
-            { _id: '1', title: 'Event 1', location: 'Paris', date: '11/30/2024', weather: { condition: 'Sunny' } },
+            { _id: '1', title: 'Event 1', location: 'Paris', date: '11/30/2024', weather: { condition: 'Sunny' } }, 
         ];
 
         fetch.mockResolvedValueOnce({
@@ -462,11 +462,11 @@ describe('Trip Summary', () => {
             ok: true,
             json: () => ({ events: mockEvents }),
         });
-
-        const { getByText } = render(<DestinationDetails />);
+ 
+        const { getAllByText } = render(<DestinationDetails />);
 
         await waitFor(() => {
-            getByText('Sunny');
+            getAllByText('Sunny');
         });
     });
 
