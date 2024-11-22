@@ -7,7 +7,6 @@ function EditProfile({ userId, name }) {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
-    console.log(name);
 
     const handleUsernameUpdate = async () => {
         try {
@@ -57,19 +56,40 @@ function EditProfile({ userId, name }) {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(''); // Clear previous errors
+        setError('');
+        setMessage('');
 
-        // Ensure passwords match
         if (newPassword && newPassword !== confirmPassword) {
             setError('New password and confirmation do not match');
             return;
         }
 
-        // Proceed with updating username or password if valid
-        if (username) handleUsernameUpdate();
-        if (oldPassword && newPassword) handlePasswordUpdate();
+        const messages = [];
+        const errors = [];
+
+        if (username) {
+            try {
+                await handleUsernameUpdate();
+                messages.push('Username updated successfully');
+            } catch (err) {
+                errors.push(err.message || 'Error updating username');
+            }
+        }
+
+        if (oldPassword && newPassword) {
+            try {
+                await handlePasswordUpdate();
+                messages.push('Password updated successfully');
+            } catch (err) {
+                errors.push(err.message || 'Error updating password');
+            }
+        }
+
+        // combine messages and errors
+        if (messages.length > 0) setMessage(messages.join(' & '));
+        if (errors.length > 0) setError(errors.join(' & '));
     };
 
     return (

@@ -648,12 +648,12 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
         const { userId, newUsername } = req.body;
 
     try {
-      await mongoose.connect(uri);
-      const updatedUser = await Account.findByIdAndUpdate(
-        userId,
-        { username: newUsername },
-        { new: true }
-      );
+        await mongoose.connect(uri);
+        const updatedUser = await Account.findByIdAndUpdate(
+            userId,
+            { username: newUsername },
+            { new: true }
+        );
 
             if (!updatedUser) {
                 return res.status(404).json({ error: "User not found" });
@@ -675,9 +675,9 @@ app.use(express.static(path.join(__dirname, "..", "frontend/build")));
     app.put("/updatepassword", async (req, res) => {
         const { userId, oldPassword, newPassword } = req.body;
 
-    try {
-      await mongoose.connect(uri);
-      const user = await Account.findById(userId);
+        try {
+            await mongoose.connect(uri);
+            const user = await Account.findById(userId);
 
             if (!user) {
                 return res.status(404).json({ error: "User not found" });
