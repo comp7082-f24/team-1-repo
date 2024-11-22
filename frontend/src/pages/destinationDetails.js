@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BellIcon } from "@heroicons/react/solid";
 import placeholder from "../images/placeholder.png";
-import MapComponent from "../components/MapComponent";
+import MapComponentDetails from "../components/MapComponentDetails";
 import { WMO_CODE_MAP } from "../utils/weatherCode";
 
 function DestinationDetails() {
@@ -349,8 +349,9 @@ function DestinationDetails() {
         {/* Map Section */}
         <div className="sm:w-2/3">
           <div className="relative border border-gray-300 rounded-lg shadow-md">
-            <MapComponent
+            <MapComponentDetails
               location={locationName}
+              events={events}
               className="w-full h-96 sm:h-full aspect-video rounded-lg"
             />
           </div>

@@ -171,9 +171,12 @@ function ActivitiesPlanner() {
             condition: weatherDescription,
             name: weatherDescription,
           },
+          latitude: event.lat,
+          longitude: event.lon,
         };
       });
 
+      console.log("Payload:", payload);
       const response = await axios.post("/saveevent", {
         userId: user.id,
         events: payload,
