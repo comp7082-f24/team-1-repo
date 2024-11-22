@@ -148,7 +148,6 @@ function ActivitiesPlanner() {
     }
 
     try {
-      // Create a payload with detailed weather and location information
       const payload = events.map((event) => {
         const dateStr = dateSelected;
         const weatherCode = weatherData?.[dateStr]?.weatherCode;
@@ -164,7 +163,7 @@ function ActivitiesPlanner() {
           weather: {
             temperature: weatherData?.[dateStr]?.temperature ?? "Unknown",
             condition: weatherDescription,
-            name: weatherDescription, // Adding the weather name (e.g., sunny, cloudy, etc.)
+            name: weatherDescription,
           },
         };
       });
@@ -180,7 +179,6 @@ function ActivitiesPlanner() {
           setSaveButtonText("Save Trip");
         }, 5000);
         alert("Trip saved successfully!");
-        console.log("Trip saved successfully!");
       }
     } catch (error) {
       console.error("Error saving trip:", error);
@@ -190,11 +188,12 @@ function ActivitiesPlanner() {
 
   return (
     <div>
-      <div className="w-[95%] m-4 mx-auto p-4 grid grid-cols-12 gap-4">
+      <div className="w-[95%] m-4 mx-auto p-4">
         <WikiIntro />
       </div>
-      <div className="w-[95%] m-4 mx-auto p-4 border-2 rounded-md grid grid-cols-12 gap-4 h-[1200px]">
-        <div className="flex flex-col h-[1100px] box-border align-center col-span-4 border-2 p-2 rounded-md overflow-hidden">
+      <div className="w-[95%] m-4 mx-auto p-4 border-2 rounded-md grid grid-cols-1 md:grid-cols-12 gap-4 h-[1200px] mb-[1100px] md:mb-4">
+
+        <div className="flex flex-col h-[1100px] col-span-1 md:col-span-4 border-2 p-2 rounded-md overflow-hidden">
           <Tabs
             onTabChange={handleTabChange}
             defaultActiveId={"activities-available"}
@@ -258,14 +257,13 @@ function ActivitiesPlanner() {
                           ))}
                         </ul>
                         <button
-                          className="bottom-10 right-4 bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700"
-                          onClick={() =>
-                            saveTrip(tripPlan.plan[dateSelected] ?? [])
-                          }
+                          className="bottom-10 right-4 bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700 mb-8 sm:mb-4"
+                          onClick={() => saveTrip(tripPlan.plan[dateSelected] ?? [])}
                           style={{ position: "absolute" }}
                         >
                           {saveButtonText}
                         </button>
+
                       </div>
                     )}
                   </>
@@ -274,7 +272,8 @@ function ActivitiesPlanner() {
             ]}
           />
         </div>
-        <div className="col-span-8">
+
+        <div className="col-span-1 md:col-span-8">
           <Calendar
             initialDaySelected={dateSelected}
             onCalendarInitialized={handleCalendarInitialization}
