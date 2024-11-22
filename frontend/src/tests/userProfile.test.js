@@ -89,12 +89,6 @@ describe('Edit Profile', () => {
     });
 
     test('Successfully updating username', async () => {
-        // mocking success value
-        fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => ({ message: 'Username updated successfully!' }),
-        });
-
         const { getByText, getByPlaceholderText, getByRole } = render(<EditProfile userId={mockUser.userId} name={mockUser.username} />);
 
         // changing old username to new username value
@@ -106,7 +100,7 @@ describe('Edit Profile', () => {
 
         // wait for success message
         await waitFor(() =>
-            getByText('Username updated successfully!')
+            getByText('Username updated successfully')
         );
     });
 
@@ -131,11 +125,6 @@ describe('Edit Profile', () => {
     });
 
     test('Updates password successfully', async () => {
-        fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => ({ message: 'Password updated successfully!' }),
-        });
-
         const { getByText, getByPlaceholderText, getByRole } = render(<EditProfile userId={mockUser.userId} name={mockUser.username} />);
 
         // mock password change
@@ -152,7 +141,33 @@ describe('Edit Profile', () => {
         fireEvent.click(getByRole('button', { name: /update profile/i }));
 
         await waitFor(() =>
-            getByText('Password updated successfully!')
+            getByText('Password updated successfully')
+        );
+    });
+
+    test('Updates username & password successfully', async () => {
+        const { getByText, getByPlaceholderText, getByRole } = render(<EditProfile userId={mockUser.userId} name={mockUser.username} />);
+
+        // changing old username to new username value
+        fireEvent.change(getByPlaceholderText(mockUser.username), {
+            target: { value: 'NewUsername' },
+        });
+
+        // mock password change
+        fireEvent.change(getByPlaceholderText('Enter old password'), {
+            target: { value: 'oldpassword123' },
+        });
+        fireEvent.change(getByPlaceholderText('Enter new password'), {
+            target: { value: 'newpassword123' },
+        });
+        fireEvent.change(getByPlaceholderText('Confirm new password'), {
+            target: { value: 'newpassword123' },
+        });
+
+        fireEvent.click(getByRole('button', { name: /update profile/i }));
+
+        await waitFor(() =>
+            getByText('Username updated successfully & Password updated successfully')
         );
     });
 

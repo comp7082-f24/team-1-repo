@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { BellIcon } from "@heroicons/react/solid";
 import placeholder from "../images/placeholder.png";
 import MapComponent from "../components/MapComponent";
@@ -85,15 +84,19 @@ function DestinationDetails() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get(`/events/${user.id}`);
-        const updatedEvents = response.data.events.map((event) => ({
+        const response = await fetch(`/events/${user.id}`);
+        if (!response.ok) {
+          throw new Error("Error fetching events.");
+        }
+        const data = await response.json();
+        const updatedEvents = data.events.map((event) => ({
           ...event,
           date: new Date(event.date),
         }));
         updatedEvents.sort((a, b) => a.date - b.date);
         setEvents(updatedEvents);
         summarizeWeather(updatedEvents);
-        setLocationName(updatedEvents[0].location.city);
+        setLocationName(updatedEvents[0]?.location?.city || "");
       } catch (error) {
         console.error("Error fetching events:", error);
       }
@@ -118,9 +121,18 @@ function DestinationDetails() {
         console.error("Error: eventId is undefined.");
         return;
       }
-      await axios.post("/removeEvent", { userId: user.id, eventId });
+      const response = await fetch("/removeEvent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, eventId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error removing event.");
+      }
+
       setEvents((prevEvents) =>
-        prevEvents.filter((events) => events._id !== eventId)
+        prevEvents.filter((event) => event._id !== eventId)
       );
     } catch (error) {
       console.error("Error removing event:", error);
@@ -146,6 +158,7 @@ function DestinationDetails() {
 
       fetchLocationData();
     }, [event.location.city]);
+
 
     return (
       <div className="items-center border border-black rounded-md">
