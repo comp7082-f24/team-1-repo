@@ -22,7 +22,7 @@ export default function WikiIntro() {
 
       fetchLocationData();
     }
-  }, [locationData]); // Added locationData as dependency for useEffect
+  }, [locationData]);
 
   return (
     <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
