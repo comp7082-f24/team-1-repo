@@ -20,7 +20,7 @@ npm i
 <br>
 npm start
 ___
-Live Production deployment: https://team-1-repo.onrender.com/
+Live Production deployment: https://team-1-repo.onrender.com/ NOTE: Could take up to a minute to respond if server has spun down.
 ___
 Code Structure:
 
